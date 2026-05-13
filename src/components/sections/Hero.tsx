@@ -54,10 +54,11 @@ function AnimatedStat({ target, suffix = '', label }: { target: number; suffix?:
         if (progress < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
-    }, { threshold: 0.5 });
+    }, { threshold: 0.3 });
     observer.observe(el);
     return () => observer.disconnect();
   }, [target]);
+
 
   return (
     <div ref={ref} style={{ textAlign: 'center' }}>
@@ -182,6 +183,26 @@ export default function Hero() {
         <p style={{ fontSize:15, color:'#8899aa', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
           13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
+
+        {/* Persona fork */}
+        <div style={{ marginBottom:'1.5rem' }}>
+          <p style={{ fontSize:12, color:'#8899aa', marginBottom:10, letterSpacing:'0.02em' }}>Kinek keresünk megoldást?</p>
+          <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
+            {[
+              { label:'Villanyszerelő vagyok', target:'szakembereknek' },
+              { label:'Otthoni vásárló vagyok', target:'termekek' },
+            ].map(p => (
+              <button
+                key={p.label}
+                onClick={() => document.getElementById(p.target)?.scrollIntoView({ behavior:'smooth' })}
+                style={{ padding:'7px 18px', borderRadius:50, border:'1px solid #00FFEF', background:'transparent', color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', transition:'background 0.2s ease' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,239,0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap', marginBottom:'2.5rem' }}>
           <a href="tel:+36306182165" className="btn-primary" style={{ textDecoration:'none', fontSize:15 }}>

@@ -14,7 +14,7 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(stagger = fals
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
 
     if (stagger) {
       el.querySelectorAll<HTMLElement>('.reveal').forEach((child, i) => {

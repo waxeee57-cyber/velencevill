@@ -12,7 +12,7 @@ import FloatingBolt from '@/components/FloatingBolt';
 import ChatWidget from '@/components/ChatWidget';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import CallbackButton from '@/components/CallbackButton';
-import CookieBanner from '@/components/CookieBanner';
+import ProSection from '@/components/sections/ProSection';
 
 const TICKER_BRANDS = [
   'Legrand', 'Schneider Electric', 'Tracon Electric', 'EGLO', 'Rábalux',
@@ -39,7 +39,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <Products />
+        <div id="termekek"><Products /></div>
+        <ProSection />
         <Brands />
         <Reviews />
         <Partner />
@@ -65,7 +66,6 @@ export default function HomePage() {
       <ChatWidget />
       <CallbackButton />
       <WhatsAppButton />
-      <CookieBanner />
     </>
   );
 }

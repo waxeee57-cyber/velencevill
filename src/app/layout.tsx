@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
+import MobileStickyBar from '@/components/MobileStickyBar';
+import CookieBanner from '@/components/CookieBanner';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -63,7 +65,7 @@ export const metadata: Metadata = {
 
 const localBusinessSchema = {
   '@context': 'https://schema.org',
-  '@type': 'ElectricalSupplyStore',
+  '@type': ['LocalBusiness', 'ElectricalSupplyStore'],
   name: 'Velence Vill Kft.',
   image: `${SITE_URL}/og-image.jpg`,
   url: SITE_URL,
@@ -85,10 +87,45 @@ const localBusinessSchema = {
     { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Saturday'], opens: '08:00', closes: '12:00' },
   ],
   priceRange: '$$',
+  paymentAccepted: 'Cash, Credit Card, Invoice',
+  currenciesAccepted: 'HUF',
+  areaServed: ['Velence', 'Gárdony', 'Agárd', 'Sukoró', 'Pákozd', 'Kápolnásnyék', 'Székesfehérvár', 'Fejér megye'],
+  hasMap: 'https://www.google.com/maps/search/?api=1&query=47.2474,18.6421',
   description: 'Villanyszerelési szaküzlet Velencén. Legrand, Schneider Electric, Tracon, EGLO és más vezető márkák forgalmazója.',
   sameAs: [
     'https://www.facebook.com/velencevill',
-    'https://www.instagram.com/velencevill',
+    'https://g.page/velencevill',
+  ],
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Mikor van nyitva a Velence Vill szaküzlet?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Hétfőtől péntekig 8:00-16:00, szombaton 8:00-12:00, vasárnap zárva.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Milyen márkákat forgalmaz a Velence Vill Kft.?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '13 vezető márkát: Tracon, Schneider Electric, Legrand, Kanlux, Rábalux, EGLO, GLOBO, EMOS, KOPP, OBO, Csatári Plast, Famatel, Mentavill.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Hol található a Velence Vill szaküzlet?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Velence, Fecske utca 12., 2481. Google Maps: https://www.google.com/maps/search/?api=1&query=47.2474,18.6421',
+      },
+    },
   ],
 };
 
@@ -96,14 +133,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="hu">
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={`${spaceGrotesk.variable} antialiased`}>
         {children}
+        <MobileStickyBar />
+        <CookieBanner />
       </body>
     </html>
   );

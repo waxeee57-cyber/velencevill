@@ -36,7 +36,7 @@ export default function Navbar() {
 
       {/* Nav links + CTA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        {[['Termékek','/termekek'],['Márkák','/markak'],['Villanyszerelő','/szerelo']].map(([label, href]) => (
+        {[['Termékek','/termekek'],['Márkák','/markak'],['Villanyszerelő','/szerelo'],['Tudástár','/tudastar'],['Kalkulátor','/kalkulator']].map(([label, href]) => (
           <Link key={href} href={href}
             style={{ fontSize: 14, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}

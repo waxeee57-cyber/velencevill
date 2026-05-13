@@ -56,7 +56,7 @@ export default function ChatWidget() {
       id: genId(),
       nev: form.nev,
       telefon: form.telefon,
-      messages: [{ role: 'admin', text: 'Köszönjük! Üzenetét megkaptuk, hamarosan visszajelzünk.', timestamp: Date.now() }],
+      messages: [{ role: 'admin', text: 'Köszönjük! Üzenetét megkaptuk, hamarosan visszajelzünk. Nyitvatartás: H-P 8-16h, Szo 8-12h', timestamp: Date.now() }],
       createdAt: Date.now(),
       read: false,
     };
@@ -92,7 +92,8 @@ export default function ChatWidget() {
       {/* Toggle button */}
       <button
         onClick={step === 'closed' ? openWidget : close}
-        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 50, width: 56, height: 56, borderRadius: '50%', background: '#00FFEF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 20px rgba(0,255,239,${pulse ? '0.6' : '0.3'})`, transition: 'all 0.3s ease', animation: pulse ? 'pulse-dot 2s infinite' : 'none' }}
+        className="chat-btn-wrap"
+        style={{ width: 56, height: 56, borderRadius: '50%', background: '#00FFEF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 20px rgba(0,255,239,${pulse ? '0.6' : '0.3'})`, transition: 'all 0.3s ease', animation: pulse ? 'pulse-dot 2s infinite' : 'none' }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
         {step !== 'closed' ? (
@@ -104,7 +105,7 @@ export default function ChatWidget() {
 
       {/* Panel */}
       {step !== 'closed' && (
-        <div style={{ position: 'fixed', bottom: 92, right: 24, zIndex: 50, width: 320, background: 'rgba(6,13,24,0.97)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+        <div className="chat-panel-wrap" style={{ width: 320, background: 'rgba(6,13,24,0.97)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
           {/* Header */}
           <div style={{ background: 'rgba(0,255,239,0.06)', borderBottom: '1px solid rgba(0,255,239,0.1)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,255,239,0.1)', border: '1.5px solid rgba(0,255,239,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

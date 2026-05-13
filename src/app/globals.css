@@ -26,8 +26,8 @@ select option {
 /* ── Scroll reveal ─────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(24px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .reveal.visible {
   opacity: 1;
@@ -143,6 +143,36 @@ select option {
 
 @keyframes spinner {
   to { transform: rotate(360deg); }
+}
+
+/* ── Mobile / desktop visibility helpers ──────────── */
+.desktop-only { display: none; }
+@media (min-width: 768px) {
+  .desktop-only { display: block; }
+}
+
+/* ── Chat widget responsive position ──────────────── */
+.chat-btn-wrap {
+  position: fixed;
+  bottom: 88px;
+  right: 16px;
+  z-index: 50;
+}
+.chat-panel-wrap {
+  position: fixed;
+  bottom: 156px;
+  right: 16px;
+  z-index: 50;
+}
+@media (min-width: 768px) {
+  .chat-btn-wrap {
+    bottom: 24px;
+    right: 24px;
+  }
+  .chat-panel-wrap {
+    bottom: 92px;
+    right: 24px;
+  }
 }
 
 /* ── Reviews responsive grid ───────────────────────── */

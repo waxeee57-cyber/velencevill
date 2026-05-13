@@ -21,7 +21,7 @@ export default function CallbackButton() {
   };
 
   return (
-    <div style={{ position: 'fixed', bottom: 88, right: 24, zIndex: 50 }}>
+    <div className="desktop-only" style={{ position: 'fixed', bottom: 88, right: 24, zIndex: 50 }}>
       {open && (
         <div className="glass-card" style={{ position: 'absolute', bottom: 60, right: 0, width: 260, padding: '1rem', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
           {status === 'done' ? (
