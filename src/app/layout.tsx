@@ -1,15 +1,19 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-inter',
+  variable: '--font-space-grotesk',
   display: 'swap',
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://velencevill.hu';
+
+export const viewport: Viewport = {
+  themeColor: '#00FFEF',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,14 +37,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Velence Vill Kft.' }],
   creator: 'Velence Vill Kft.',
+  manifest: '/manifest.json',
   openGraph: {
-    type: 'website',
-    locale: 'hu_HU',
-    url: SITE_URL,
+    title: 'Velence Vill Kft. — Villanyszerelési szaküzlet',
+    description: '13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak.',
+    url: 'https://velencevill.hu',
     siteName: 'Velence Vill Kft.',
-    title: 'Velence Vill Kft. – Villanyszerelési szaküzlet',
-    description: 'Villanyszerelési anyagok, 13 vezető márka, személyes kiszolgálás. Velence, Fecske utca 12.',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Velence Vill Kft.' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
+    locale: 'hu_HU',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
@@ -72,8 +77,8 @@ const localBusinessSchema = {
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: 47.236,
-    longitude: 18.649,
+    latitude: 47.2474,
+    longitude: 18.6421,
   },
   openingHoursSpecification: [
     { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday'], opens: '08:00', closes: '16:00' },
@@ -97,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${spaceGrotesk.variable} antialiased`}>
         {children}
       </body>
     </html>

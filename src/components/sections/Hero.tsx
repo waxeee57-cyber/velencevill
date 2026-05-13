@@ -44,11 +44,14 @@ function AnimatedStat({ target, suffix = '', label }: { target: number; suffix?:
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting) return;
       observer.disconnect();
-      let current = 0;
+      const duration = 1500;
+      const start = Date.now();
       const step = () => {
-        current += 1;
-        setCount(current);
-        if (current < target) requestAnimationFrame(step);
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.round(eased * target));
+        if (progress < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
     }, { threshold: 0.5 });
@@ -100,10 +103,7 @@ export default function Hero() {
       s.lineTo(-0.14, -2.0); s.lineTo(0.22, -0.05); s.lineTo(0.0, -0.05);
       s.closePath();
 
-      const geo = new THREE.ExtrudeGeometry(s, {
-        depth: 0.14, bevelEnabled: true,
-        bevelThickness: 0.07, bevelSize: 0.05, bevelSegments: 4,
-      });
+      const geo = new THREE.ExtrudeGeometry(s, { depth: 0.14, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.05, bevelSegments: 4 });
       geo.center();
 
       const bolt = new THREE.LineSegments(
@@ -164,7 +164,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section style={{ background:'#060d18', minHeight:540, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
+    <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
       <canvas ref={canvasRef} className="animate-float" style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
@@ -184,15 +184,14 @@ export default function Hero() {
         </p>
 
         <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap', marginBottom:'2.5rem' }}>
-          <a href="tel:+36306182165" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#00FFEF', color:'#000', fontSize:15, fontWeight:700, padding:'12px 28px', borderRadius:50, textDecoration:'none', boxShadow:'0 0 24px rgba(0,255,239,0.25)', transition:'all 0.3s ease' }}>
+          <a href="tel:+36306182165" className="btn-primary" style={{ textDecoration:'none', fontSize:15 }}>
             📞 Hívjon most · +36 30 618 2165
           </a>
-          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'transparent', color:'#ffffff', fontSize:15, fontWeight:500, padding:'12px 28px', borderRadius:50, border:'1px solid rgba(255,255,255,0.2)', cursor:'pointer', transition:'all 0.3s ease' }}>
+          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} className="btn-secondary" style={{ fontSize:15 }}>
             Ajánlatot kérek
           </button>
         </div>
 
-        {/* Stats */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.5rem', marginBottom:'2rem' }}>
           <AnimatedStat target={13} label="Vezető márka" />
           <div style={{ width:0.5, height:32, background:'rgba(0,255,239,0.1)' }} />
@@ -201,7 +200,7 @@ export default function Hero() {
 
         <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'0 auto 2rem' }} />
 
-        {/* Opening hours — centered, max-width 400px */}
+        {/* Opening hours */}
         <div style={{ maxWidth:400, margin:'0 auto', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
           <div style={{ display:'inline-flex', alignItems:'center', gap:7, fontSize:13, fontWeight:500, padding:'5px 14px', borderRadius:20, background: isOpen ? 'rgba(0,255,239,0.07)' : 'rgba(0,0,0,0.4)', border: isOpen ? '0.5px solid rgba(0,255,239,0.22)' : '0.5px solid rgba(239,68,68,0.2)', color: isOpen ? '#00FFEF' : '#F87171' }}>
             <span style={{ width:6, height:6, borderRadius:'50%', background: isOpen ? '#00FFEF' : '#EF4444', display:'inline-block' }} />

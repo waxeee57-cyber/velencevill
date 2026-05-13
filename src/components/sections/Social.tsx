@@ -1,15 +1,18 @@
 'use client';
+import { useReveal } from '@/hooks/useReveal';
 
 export default function Social() {
+  const ref = useReveal<HTMLElement>();
+
   return (
-    <section style={{ padding: '4rem 2rem', background: '#060d18', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
+    <section ref={ref} className="reveal" style={{ padding: '4rem 2rem', background: '#060d18', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
       <div style={{ maxWidth: 960, margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: '#00FFEF', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Kövessen minket</p>
+        <p className="section-label" style={{ marginBottom: 8 }}>Kövessen minket</p>
         <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>Legyen naprakész az újdonságokról</h2>
         <p style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Akciók, termékbemutatók és szakmai tippek — kövessen minket a közösségi médiában.</p>
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a
-            href="https://www.facebook.com/velencevill"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#1557b0', color: '#fff', fontSize: 15, fontWeight: 600, padding: '12px 24px', borderRadius: 10, textDecoration: 'none', transition: 'all 0.3s ease' }}
@@ -19,7 +22,7 @@ export default function Social() {
             Kövessen Facebookon
           </a>
           <a
-            href="https://www.instagram.com/velencevill"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: '#fff', fontSize: 15, fontWeight: 600, padding: '12px 24px', borderRadius: 10, textDecoration: 'none', background: 'linear-gradient(#060d18, #060d18) padding-box, linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) border-box', border: '2px solid transparent', transition: 'all 0.3s ease' }}

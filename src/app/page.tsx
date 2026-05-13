@@ -1,11 +1,18 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/sections/Hero';
+import InfoSection from '@/components/sections/InfoSection';
 import Products from '@/components/sections/Products';
 import Brands from '@/components/sections/Brands';
+import Reviews from '@/components/sections/Reviews';
 import Partner from '@/components/sections/Partner';
 import Social from '@/components/sections/Social';
 import ContactForm from '@/components/sections/ContactForm';
+import FloatingBolt from '@/components/FloatingBolt';
+import ChatWidget from '@/components/ChatWidget';
+import WhatsAppButton from '@/components/WhatsAppButton';
+import CallbackButton from '@/components/CallbackButton';
+import CookieBanner from '@/components/CookieBanner';
 
 const TICKER_BRANDS = [
   'Legrand', 'Schneider Electric', 'Tracon Electric', 'EGLO', 'Rábalux',
@@ -18,6 +25,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero />
+        <InfoSection />
 
         {/* Brand ticker */}
         <div style={{ background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)', borderBottom: '0.5px solid rgba(0,255,239,0.08)', padding: '11px 0', overflow: 'hidden' }}>
@@ -33,13 +41,14 @@ export default function HomePage() {
 
         <Products />
         <Brands />
+        <Reviews />
         <Partner />
 
         {/* Contact */}
         <section id="ajanlat" style={{ padding: '4rem 1.5rem', background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
           <div style={{ maxWidth: 960, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#00FFEF', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 6 }}>Kapcsolat</p>
+              <p className="section-label" style={{ marginBottom: 6 }}>Kapcsolat</p>
               <h2 style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>Kérjen ajánlatot</h2>
               <p style={{ fontSize: 14, color: '#8899aa' }}>1 munkanapon belül visszahívjuk</p>
             </div>
@@ -50,6 +59,13 @@ export default function HomePage() {
         <Social />
       </main>
       <Footer />
+
+      {/* Fixed/floating overlays */}
+      <FloatingBolt />
+      <ChatWidget />
+      <CallbackButton />
+      <WhatsAppButton />
+      <CookieBanner />
     </>
   );
 }

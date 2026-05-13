@@ -1,47 +1,56 @@
 'use client';
+import { useState } from 'react';
+import { useReveal } from '@/hooks/useReveal';
 
 const BRANDS = [
-  { name: 'TRACON',    sub: 'Electric',  tag: 'Szerelés' },
-  { name: 'Schneider', sub: 'Electric',  tag: 'Automatika' },
-  { name: 'LEGRAND',   sub: '',          tag: 'Kapcsolók' },
-  { name: 'Kanlux',    sub: '',          tag: 'Világítás' },
-  { name: 'Rábalux',   sub: '',          tag: 'Lámpák' },
-  { name: 'EGLO',      sub: '',          tag: 'Design lámpa' },
-  { name: 'GLOBO',     sub: '',          tag: 'Világítás' },
-  { name: 'EMOS',      sub: '',          tag: 'Szerelvény' },
-  { name: 'KOPP',      sub: '',          tag: 'Kapcsolók' },
-  { name: 'OBO',       sub: '',          tag: 'Csatornák' },
-  { name: 'Csatári',   sub: 'Plast',     tag: 'Szekrények' },
-  { name: 'Famatel',   sub: '',          tag: 'Elosztók' },
-  { name: 'Mentavill', sub: '',          tag: 'Nagyker' },
+  { name: 'TRACON',    sub: 'Electric',  tag: 'Szerelés',    link: 'https://www.traconelectric.com' },
+  { name: 'Schneider', sub: 'Electric',  tag: 'Automatika',  link: 'https://www.se.com/hu' },
+  { name: 'LEGRAND',   sub: '',          tag: 'Kapcsolók',   link: 'https://www.legrand.hu' },
+  { name: 'Kanlux',    sub: '',          tag: 'Világítás',   link: 'https://www.kanlux.com' },
+  { name: 'Rábalux',   sub: '',          tag: 'Lámpák',      link: 'https://www.rabalux.com' },
+  { name: 'EGLO',      sub: '',          tag: 'Design lámpa',link: 'https://www.eglo.com' },
+  { name: 'GLOBO',     sub: '',          tag: 'Világítás',   link: 'https://www.globo-lighting.com' },
+  { name: 'EMOS',      sub: '',          tag: 'Szerelvény',  link: 'https://www.emos.eu' },
+  { name: 'KOPP',      sub: '',          tag: 'Kapcsolók',   link: 'https://www.kopp.de' },
+  { name: 'OBO',       sub: '',          tag: 'Csatornák',   link: 'https://www.obo.de' },
+  { name: 'Csatári',   sub: 'Plast',     tag: 'Szekrények',  link: 'https://www.csatariplast.hu' },
+  { name: 'Famatel',   sub: '',          tag: 'Elosztók',    link: 'https://www.famatel.com' },
+  { name: 'Mentavill', sub: '',          tag: 'Nagyker',     link: 'https://www.mentavill.hu' },
 ];
 
 export default function Brands() {
+  const ref = useReveal<HTMLElement>(true);
+  const [hovered, setHovered] = useState<string | null>(null);
+
   return (
-    <section id="markak" style={{ padding: '4rem 2rem', background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
+    <section id="markak" ref={ref} style={{ padding: '4rem 2rem', background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: '#00FFEF', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 6 }}>Forgalmazott márkák</p>
-        <h2 style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>13 vezető gyártó — egy helyen</h2>
-        <p style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Az iparág legelismertebb márkáit forgalmazzuk szaküzletünkben</p>
+        <p className="section-label reveal" style={{ marginBottom: 6 }}>Forgalmazott márkák</p>
+        <h2 className="reveal" style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>13 vezető gyártó — egy helyen</h2>
+        <p className="reveal" style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Az iparág legelismertebb márkáit forgalmazzuk szaküzletünkben</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
           {BRANDS.map(b => (
-            <div key={b.name}
-              style={{ background: 'rgba(6,13,24,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.12)', borderRadius: 12, padding: '16px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minHeight: 90, justifyContent: 'center', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d', cursor: 'default' }}
+            <a key={b.name} href={b.link} target="_blank" rel="noopener noreferrer"
+              className="reveal"
+              style={{ position: 'relative', background: 'rgba(6,13,24,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.12)', borderRadius: 12, padding: '16px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, minHeight: 90, justifyContent: 'center', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d', cursor: 'pointer', textDecoration: 'none' }}
               onMouseEnter={e => {
+                setHovered(b.name);
                 e.currentTarget.style.transform = 'translateY(-8px) rotateX(4deg) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15)';
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15), 0 0 0 1px rgba(0,255,239,0.3)';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.4)';
               }}
               onMouseLeave={e => {
+                setHovered(null);
                 e.currentTarget.style.transform = 'translateY(0) rotateX(0) scale(1)';
                 e.currentTarget.style.boxShadow = 'none';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.12)';
               }}>
+              <div style={{ position: 'absolute', top: 7, right: 9, fontSize: 11, color: '#00FFEF', opacity: hovered === b.name ? 1 : 0, transition: 'opacity 0.2s' }}>↗</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.3 }}>
                 {b.name}{b.sub && <><br /><span style={{ fontSize: 11, fontWeight: 500, color: '#8899aa' }}>{b.sub}</span></>}
               </div>
               <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 10, background: 'rgba(0,255,239,0.08)', color: '#00FFEF', border: '0.5px solid rgba(0,255,239,0.2)' }}>{b.tag}</span>
-            </div>
+            </a>
           ))}
         </div>
       </div>
