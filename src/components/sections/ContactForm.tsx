@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { trackEvent } from '@/utils/analytics';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -30,6 +31,7 @@ export default function ContactForm() {
   const handleSubmit = async () => {
     if (!form.nev || !form.telefon) return alert('Név és telefonszám kötelező.');
     setState('loading');
+    trackEvent('form_submit');
     try {
       const res = await fetch('/api/lead', {
         method: 'POST',
@@ -63,8 +65,8 @@ export default function ContactForm() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+    <div style={{ maxWidth: 480, margin: '0 auto', overflow: 'hidden' }}>
+      <div className="form-row-grid">
         <div>
           <label style={labelStyle}>Neve *</label>
           <input style={inputStyle} placeholder="Kovács János" value={form.nev}

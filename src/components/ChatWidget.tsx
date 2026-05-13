@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { trackEvent } from '@/utils/analytics';
 
 interface ChatMessage {
   role: 'user' | 'admin';
@@ -48,6 +49,7 @@ export default function ChatWidget() {
     setPulse(false);
     setOpened(true);
     setStep('choice');
+    trackEvent('chat_open');
   };
 
   const startChat = () => {
@@ -72,6 +74,7 @@ export default function ChatWidget() {
     saveSession(updated);
     setSession(updated);
     setInput('');
+    trackEvent('chat_message');
 
     try {
       await fetch('/api/chat', {

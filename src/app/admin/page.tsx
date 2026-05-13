@@ -3,9 +3,20 @@ import { useState, useEffect } from 'react';
 
 interface ChatMessage { role: 'user' | 'admin'; text: string; timestamp: number }
 interface ChatSession { id: string; nev: string; telefon: string; messages: ChatMessage[]; createdAt: number; read: boolean }
-interface AnalyticsDay { label: string; count: number }
 
-type Tab = 'chatok' | 'analitika' | 'leadek';
+interface AnalyticsData {
+  total: number;
+  uniqueSessions: number;
+  topEvent: string | null;
+  passivePercent: number;
+  days: { label: string; count: number }[];
+  eventStats: { name: string; count: number }[];
+  referrers: { source: string; count: number }[];
+  recentPassive: { sessionId: string; lastSeen: number; pathname: string }[];
+  surveyResults: { found?: string; missing?: string; timestamp: number }[];
+}
+
+type Tab = 'chatok' | 'analitika' | 'leadek' | 'kerdoiv';
 
 // ── Login ──────────────────────────────────────────────────────────────────────
 function LoginForm({ onAuth }: { onAuth: () => void }) {
@@ -77,7 +88,6 @@ function ChatTab() {
     setActive(updated);
     setSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
     setReply('');
-    // TODO: Supabase Realtime szinkronra cserélendő
   };
 
   const fmt = (ts: number) => new Date(ts).toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -130,7 +140,7 @@ function ChatTab() {
 
 // ── Analytics tab ──────────────────────────────────────────────────────────────
 function AnalyticsTab() {
-  const [data, setData] = useState<{ total: number; days: AnalyticsDay[] } | null>(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
 
   useEffect(() => {
     fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {});
@@ -138,26 +148,149 @@ function AnalyticsTab() {
 
   if (!data) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
 
-  const max = Math.max(...data.days.map(d => d.count), 1);
+  const maxDay = Math.max(...data.days.map(d => d.count), 1);
+  const maxRef = Math.max(...data.referrers.map(r => r.count), 1);
 
   return (
     <div>
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: 16, display: 'inline-block' }}>
-        <div style={{ fontSize: 36, fontWeight: 700, color: '#00FFEF' }}>{data.total}</div>
-        <div style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Összes látogatás</div>
+      {/* 4 metric cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Oldalmegtekintés', value: data.total },
+          { label: 'Egyedi látogatók', value: data.uniqueSessions },
+          { label: 'Passzív látogatók', value: `${data.passivePercent}%` },
+          { label: 'Top esemény', value: data.topEvent ?? '—' },
+        ].map(card => (
+          <div key={card.label} className="glass-card" style={{ padding: '1.25rem' }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: '#00FFEF', marginBottom: 4 }}>{card.value}</div>
+            <div style={{ fontSize: 11, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{card.label}</div>
+          </div>
+        ))}
       </div>
-      <div style={{ marginTop: 24 }}>
-        <p style={{ fontSize: 13, color: '#8899aa', marginBottom: 12 }}>Utolsó 7 nap</p>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
+
+      {/* 14-day chart */}
+      <div className="glass-card" style={{ padding: '1.25rem', marginBottom: 16 }}>
+        <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Utolsó 14 nap</p>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 110 }}>
           {data.days.map(d => (
-            <div key={d.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 10, color: '#8899aa' }}>{d.count}</span>
-              <div style={{ width: '100%', background: 'rgba(0,255,239,0.2)', borderRadius: '4px 4px 0 0', height: `${Math.max((d.count / max) * 88, 4)}px`, transition: 'height 0.5s ease', border: '1px solid rgba(0,255,239,0.3)' }} />
-              <span style={{ fontSize: 9, color: '#475569', textAlign: 'center' }}>{d.label}</span>
+            <div key={d.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <span style={{ fontSize: 9, color: '#8899aa' }}>{d.count || ''}</span>
+              <div style={{ width: '100%', background: 'rgba(0,255,239,0.2)', borderRadius: '3px 3px 0 0', height: `${Math.max((d.count / maxDay) * 76, 2)}px`, border: '1px solid rgba(0,255,239,0.3)' }} />
+              <span style={{ fontSize: 8, color: '#475569', textAlign: 'center', writingMode: 'vertical-rl', transform: 'rotate(180deg)', height: 30 }}>{d.label}</span>
             </div>
           ))}
         </div>
       </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 16 }}>
+        {/* Event breakdown */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Esemény bontás</p>
+          {data.eventStats.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#475569' }}>Még nincs esemény.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {data.eventStats.slice(0, 8).map(ev => (
+                <div key={ev.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '0.5px solid rgba(0,255,239,0.06)' }}>
+                  <span style={{ fontSize: 13, color: '#8899aa' }}>{ev.name}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#00FFEF' }}>{ev.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Referrers */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Forgalomforrások</p>
+          {data.referrers.length === 0 ? (
+            <p style={{ fontSize: 13, color: '#475569' }}>Még nincs adat.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {data.referrers.slice(0, 6).map(r => (
+                <div key={r.source}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <span style={{ fontSize: 12, color: '#8899aa' }}>{r.source}</span>
+                    <span style={{ fontSize: 12, color: '#fff' }}>{r.count}</span>
+                  </div>
+                  <div style={{ height: 3, background: 'rgba(0,255,239,0.1)', borderRadius: 2 }}>
+                    <div style={{ width: `${(r.count / maxRef) * 100}%`, height: '100%', background: '#00FFEF', borderRadius: 2 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Passive visitors */}
+      {data.recentPassive.length > 0 && (
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Passzív látogatók (legutóbbi)</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {data.recentPassive.slice(0, 5).map(p => (
+              <div key={p.sessionId} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '0.5px solid rgba(0,255,239,0.06)', gap: 8 }}>
+                <span style={{ fontSize: 12, color: '#8899aa', fontFamily: 'monospace', flexShrink: 0 }}>{p.sessionId.slice(0, 12)}…</span>
+                <span style={{ fontSize: 12, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.pathname}</span>
+                <span style={{ fontSize: 11, color: '#475569', flexShrink: 0 }}>{new Date(p.lastSeen).toLocaleDateString('hu-HU')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Kérdőív tab ────────────────────────────────────────────────────────────────
+function KerdoivTab() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+
+  useEffect(() => {
+    fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {});
+  }, []);
+
+  if (!data) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
+
+  const results = data.surveyResults ?? [];
+
+  if (results.length === 0) {
+    return <p style={{ color: '#8899aa', fontSize: 14 }}>Még nincs kitöltött kérdőív.</p>;
+  }
+
+  const tally = (key: 'found' | 'missing') =>
+    results.reduce((acc, r) => {
+      const val = r[key];
+      if (val) acc[val] = (acc[val] ?? 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+  const foundCounts = tally('found');
+  const missingCounts = tally('missing');
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Megtalálta amit keresett?</p>
+          {Object.entries(foundCounts).map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '0.5px solid rgba(0,255,239,0.06)' }}>
+              <span style={{ fontSize: 13, color: '#8899aa' }}>{k}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#00FFEF' }}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <p style={{ fontSize: 12, color: '#8899aa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Mi hiányzott?</p>
+          {Object.entries(missingCounts).map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '0.5px solid rgba(0,255,239,0.06)' }}>
+              <span style={{ fontSize: 13, color: '#8899aa' }}>{k}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#00FFEF' }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: '#475569', marginTop: 12 }}>Összes kitöltés: {results.length}</p>
     </div>
   );
 }
@@ -187,15 +320,15 @@ export default function AdminPage() {
   if (!authed) return <LoginForm onAuth={() => setAuthed(true)} />;
 
   const TABS: { id: Tab; label: string }[] = [
-    { id: 'chatok', label: '💬 Chatok' },
+    { id: 'chatok',    label: '💬 Chatok' },
     { id: 'analitika', label: '📊 Analitika' },
-    { id: 'leadek', label: '📋 Leadek' },
+    { id: 'leadek',    label: '📋 Leadek' },
+    { id: 'kerdoiv',   label: '📝 Kérdőív' },
   ];
 
   return (
     <div style={{ background: '#060d18', minHeight: '100vh', padding: '2rem' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00FFEF" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -207,7 +340,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'rgba(13,31,60,0.5)', padding: 4, borderRadius: 10, width: 'fit-content' }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
@@ -217,10 +349,10 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Content */}
         {tab === 'chatok'    && <ChatTab />}
         {tab === 'analitika' && <AnalyticsTab />}
         {tab === 'leadek'    && <LeadsTab />}
+        {tab === 'kerdoiv'   && <KerdoivTab />}
       </div>
     </div>
   );

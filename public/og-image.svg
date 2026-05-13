@@ -1,0 +1,33 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow1" cx="75%" cy="25%" r="55%">
+      <stop offset="0%" stop-color="#00FFEF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#060d18" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="15%" cy="80%" r="40%">
+      <stop offset="0%" stop-color="#00FFEF" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#060d18" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#060d18"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <!-- Border -->
+  <rect x="2" y="2" width="1196" height="626" fill="none" stroke="rgba(0,255,239,0.12)" stroke-width="1"/>
+  <!-- Bolt icon -->
+  <g transform="translate(100, 195) scale(1.1)">
+    <path d="M55 10L15 105h42l-6 75 50-95H60l6-75z" fill="none" stroke="#00FFEF" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M55 10L15 105h42l-6 75 50-95H60l6-75z" fill="rgba(0,255,239,0.05)"/>
+  </g>
+  <!-- Company name -->
+  <text x="195" y="295" font-family="system-ui, -apple-system, sans-serif" font-size="74" font-weight="700" fill="#ffffff" letter-spacing="-1">Velence Vill Kft.</text>
+  <!-- Divider -->
+  <line x1="195" y1="325" x2="750" y2="325" stroke="rgba(0,255,239,0.25)" stroke-width="1.5"/>
+  <!-- Subtitle -->
+  <text x="195" y="372" font-family="system-ui, -apple-system, sans-serif" font-size="30" fill="#00FFEF" letter-spacing="0.5">Villanyszerelési szaküzlet · 13 vezető márka</text>
+  <!-- Brands hint -->
+  <text x="195" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#475569">Legrand · Schneider Electric · Tracon · EGLO és még sok más</text>
+  <!-- URL bar -->
+  <rect x="195" y="510" width="500" height="44" rx="8" fill="rgba(0,255,239,0.06)" stroke="rgba(0,255,239,0.2)" stroke-width="1"/>
+  <text x="218" y="538" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#8899aa">velencevill.hu · Velence, Fecske utca 12.</text>
+</svg>

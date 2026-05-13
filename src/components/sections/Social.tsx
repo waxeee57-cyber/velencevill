@@ -1,5 +1,6 @@
 'use client';
 import { useReveal } from '@/hooks/useReveal';
+import { trackEvent } from '@/utils/analytics';
 
 export default function Social() {
   const ref = useReveal<HTMLElement>();
@@ -15,6 +16,7 @@ export default function Social() {
             href="#"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent('facebook_click')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#1557b0', color: '#fff', fontSize: 15, fontWeight: 600, padding: '12px 24px', borderRadius: 10, textDecoration: 'none', transition: 'all 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(21,87,176,0.45)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>
@@ -25,6 +27,7 @@ export default function Social() {
             href="#"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent('instagram_click')}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: '#fff', fontSize: 15, fontWeight: 600, padding: '12px 24px', borderRadius: 10, textDecoration: 'none', background: 'linear-gradient(#060d18, #060d18) padding-box, linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) border-box', border: '2px solid transparent', transition: 'all 0.3s ease' }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(220,39,67,0.3)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}>

@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { trackEvent } from '@/utils/analytics';
 
 export default function WhatsAppButton() {
   const [tooltip, setTooltip] = useState(false);
@@ -15,6 +16,7 @@ export default function WhatsAppButton() {
         href="https://wa.me/36306182165"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackEvent('whatsapp_click')}
         onMouseEnter={() => setTooltip(true)}
         onMouseLeave={() => setTooltip(false)}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: '50%', background: '#25D366', boxShadow: '0 4px 16px rgba(37,211,102,0.35)', transition: 'all 0.3s ease', textDecoration: 'none' }}

@@ -202,3 +202,68 @@ select option {
     width: auto;
   }
 }
+
+/* ── Contact form responsive grid ───────────────────── */
+.form-row-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (min-width: 640px) {
+  .form-row-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── FloatingBolt CSS animations ─────────────────────── */
+@keyframes bolt-flash {
+  0%, 93%, 100% { filter: drop-shadow(0 0 6px rgba(0,255,239,0.5)); }
+  95%           { filter: drop-shadow(0 0 22px #00FFEF) brightness(3); }
+}
+@keyframes spark-float-1 {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-12px, -22px) scale(0.2); }
+}
+@keyframes spark-float-2 {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(14px, -18px) scale(0.2); }
+}
+@keyframes spark-float-3 {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-8px, -26px) scale(0.2); }
+}
+@keyframes spark-float-4 {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(10px, -20px) scale(0.2); }
+}
+.bolt-spin {
+  animation: boltSpin 8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+.bolt-flash {
+  animation: boltSpin 8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite,
+             bolt-flash 5s ease-in-out infinite;
+}
+.bolt-spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00FFEF;
+  box-shadow: 0 0 4px #00FFEF;
+  opacity: 0;
+}
+.spark-1 { top: 4px;  left: 16px; animation: spark-float-1 3s 0.0s   ease-out infinite; }
+.spark-2 { top: 18px; left: 30px; animation: spark-float-2 3s 0.75s  ease-out infinite; }
+.spark-3 { top: 52px; left: 8px;  animation: spark-float-3 3s 1.5s   ease-out infinite; }
+.spark-4 { top: 38px; left: 34px; animation: spark-float-4 3s 2.25s  ease-out infinite; }
+.floating-bolt {
+  transition: filter 0.3s ease;
+}
+.floating-bolt:hover {
+  filter: drop-shadow(0 0 16px rgba(0,255,239,0.9));
+}

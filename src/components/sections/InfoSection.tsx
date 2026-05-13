@@ -1,5 +1,6 @@
 'use client';
 import { useReveal } from '@/hooks/useReveal';
+import { trackEvent } from '@/utils/analytics';
 
 const HOURS = [
   { label: 'Hétfő – Péntek', time: '8:00 – 16:00', highlight: true },
@@ -54,6 +55,7 @@ export default function InfoSection() {
               href="https://www.google.com/maps/search/?api=1&query=47.2474,18.6421"
               target="_blank" rel="noopener noreferrer"
               className="btn-secondary"
+              onClick={() => trackEvent('map_click')}
               style={{ flex: 1, justifyContent: 'center', fontSize: 13, padding: '10px 12px', textDecoration: 'none' }}>
               📍 Google Maps
             </a>
@@ -61,6 +63,7 @@ export default function InfoSection() {
               href="https://waze.com/ul?ll=47.2474,18.6421&navigate=yes"
               target="_blank" rel="noopener noreferrer"
               className="btn-secondary"
+              onClick={() => trackEvent('waze_click')}
               style={{ flex: 1, justifyContent: 'center', fontSize: 13, padding: '10px 12px', textDecoration: 'none' }}>
               🚗 Waze
             </a>
