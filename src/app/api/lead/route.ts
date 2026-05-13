@@ -9,17 +9,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Név és telefonszám kötelező.' }, { status: 400 });
     }
 
-    // Supabase mentés (ha be van állítva)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (supabaseUrl && supabaseKey) {
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(supabaseUrl, supabaseKey);
-      await supabase.from('leads').insert({ nev, telefon, email, tema, uzenet, tipus: 'szakuzlet', statusz: 'uj' });
+      await supabase.from('leads').insert({
+        nev, telefon, email, tema, uzenet,
+        tipus: 'szakuzlet',
+        statusz: 'uj',
+      });
     }
 
-    // Resend email (ha be van állítva)
     const resendKey = process.env.RESEND_API_KEY;
     if (resendKey) {
       const { Resend } = await import('resend');
