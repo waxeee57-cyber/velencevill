@@ -94,18 +94,12 @@ export default function Hero() {
       ];
 
       const sparks = Array.from({ length: 28 }, () => {
-        const mesh = new THREE.Mesh(
-          new THREE.SphereGeometry(0.025 + Math.random() * 0.02, 4, 4),
-          new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x00FFEF : 0xffffff, transparent: true, opacity: 0 })
-        );
+        const mat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x00FFEF : 0xffffff, transparent: true, opacity: 0 });
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.025 + Math.random() * 0.02, 4, 4), mat);
         const pos = spawnPoints[Math.floor(Math.random() * spawnPoints.length)].clone();
         mesh.position.copy(pos);
         scene.add(mesh);
-        return {
-          mesh, pos: pos.clone(),
-          vel: new THREE.Vector3((Math.random() - 0.5) * 0.06, (Math.random() - 0.5) * 0.06, (Math.random() - 0.5) * 0.06),
-          life: Math.random(), maxLife: 0.5 + Math.random() * 0.8, delay: Math.random() * 2,
-        };
+        return { mesh, mat, pos: pos.clone(), vel: new THREE.Vector3((Math.random()-0.5)*0.06,(Math.random()-0.5)*0.06,(Math.random()-0.5)*0.06), life: Math.random(), maxLife: 0.5+Math.random()*0.8, delay: Math.random()*2 };
       });
 
       let t = 0;
@@ -116,119 +110,73 @@ export default function Hero() {
         bolt.rotation.x = Math.sin(t * 0.28) * 0.14;
         pl1.position.x = Math.sin(t * 0.45) * 3.5;
         pl1.position.y = Math.cos(t * 0.38) * 2.5;
-
         sparks.forEach(sp => {
           sp.life += 0.018;
           if (sp.life > sp.maxLife + sp.delay) {
-            sp.life = 0; sp.delay = Math.random() * 1.5; sp.maxLife = 0.4 + Math.random() * 0.7;
-            const np = spawnPoints[Math.floor(Math.random() * spawnPoints.length)].clone();
+            sp.life = 0; sp.delay = Math.random()*1.5; sp.maxLife = 0.4+Math.random()*0.7;
+            const np = spawnPoints[Math.floor(Math.random()*spawnPoints.length)].clone();
             sp.pos.copy(np); sp.mesh.position.copy(np);
-            sp.vel.set((Math.random() - 0.5) * 0.07, (Math.random() - 0.5) * 0.07, (Math.random() - 0.5) * 0.07);
+            sp.vel.set((Math.random()-0.5)*0.07,(Math.random()-0.5)*0.07,(Math.random()-0.5)*0.07);
           }
           const active = sp.life - sp.delay;
           if (active > 0) {
-            sp.mesh.position.set(
-              sp.pos.x + sp.vel.x * active * 18,
-              sp.pos.y + sp.vel.y * active * 18,
-              sp.pos.z + sp.vel.z * active * 18
-            );
+            sp.mesh.position.set(sp.pos.x+sp.vel.x*active*18, sp.pos.y+sp.vel.y*active*18, sp.pos.z+sp.vel.z*active*18);
             const progress = active / sp.maxLife;
-            (sp.mesh.material as THREE.MeshBasicMaterial).opacity = progress < 0.2 ? (progress / 0.2) * 0.9 : (1 - progress) * 0.9;
-            sp.mesh.scale.setScalar(1 - progress * 0.5);
-            sp.mesh.rotation.set(bolt.rotation.x, bolt.rotation.y, 0);
-          } else {
-            (sp.mesh.material as THREE.MeshBasicMaterial).opacity = 0;
-          }
+            sp.mat.opacity = progress < 0.2 ? (progress/0.2)*0.9 : (1-progress)*0.9;
+            sp.mesh.scale.setScalar(1-progress*0.5);
+          } else { sp.mat.opacity = 0; }
         });
-
         renderer.render(scene, camera);
       };
       animate();
     });
-
     return () => cancelAnimationFrame(animId);
   }, []);
 
   return (
-    <section style={{
-      background: '#060d18',
-      minHeight: 540,
-      position: 'relative',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '4rem 2rem 3rem',
-      textAlign: 'center',
-    }}>
-      {/* Glow orbs */}
-      <div style={{ position: 'absolute', top: -100, right: -80, width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: -80, left: -60, width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-      {/* 3D Bolt */}
-      <canvas ref={canvasRef} style={{ position: 'absolute', top: -14, right: -14, pointerEvents: 'none', zIndex: 1, opacity: 0.8 }} />
-
-      <div style={{ position: 'relative', zIndex: 2, maxWidth: 560, width: '100%' }}>
-
-        {/* Badge */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,255,239,0.07)', border: '0.5px solid rgba(0,255,239,0.25)', color: '#00FFEF', fontSize: 12, fontWeight: 500, padding: '5px 14px', borderRadius: 20, marginBottom: '1.6rem', letterSpacing: '0.03em' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FFEF', display: 'inline-block', animation: 'pulseDot 2s infinite' }} />
+    <section style={{ background:'#060d18', minHeight:540, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
+      <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
+      <canvas ref={canvasRef} style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
+      <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>
+          <span style={{ width:6, height:6, borderRadius:'50%', background:'#00FFEF', display:'inline-block', animation:'pulseDot 2s infinite' }} />
           Velence · Fecske utca 12.
         </div>
-
-        {/* H1 */}
-        <h1 style={{ fontSize: 38, fontWeight: 500, color: '#F1F5F9', lineHeight: 1.22, marginBottom: '1rem', fontFamily: 'system-ui, sans-serif' }}>
-          Villanyszerelési anyagok —<br />
-          <em style={{ fontStyle: 'normal', color: '#00FFEF' }}>szakértői szinten</em>
+        <h1 style={{ fontSize:38, fontWeight:500, color:'#F1F5F9', lineHeight:1.22, marginBottom:'1rem', fontFamily:'system-ui, sans-serif' }}>
+          Villanyszerelési anyagok —<br /><em style={{ fontStyle:'normal', color:'#00FFEF' }}>szakértői szinten</em>
         </h1>
-
-        <p style={{ fontSize: 15, color: '#4a6080', lineHeight: 1.7, marginBottom: '2rem', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+        <p style={{ fontSize:15, color:'#4a6080', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
           13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
-
-        {/* CTAs */}
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-          <a href="tel:+36306182165" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#00FFEF', color: '#000', fontSize: 15, fontWeight: 600, padding: '12px 24px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 0 24px rgba(0,255,239,0.25)' }}>
+        <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap', marginBottom:'2.5rem' }}>
+          <a href="tel:+36306182165" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#00FFEF', color:'#000', fontSize:15, fontWeight:600, padding:'12px 24px', borderRadius:10, textDecoration:'none', boxShadow:'0 0 24px rgba(0,255,239,0.25)' }}>
             📞 Hívjon most · +36 30 618 2165
           </a>
-          <button
-            onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior: 'smooth' })}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#000', color: '#94A3B8', fontSize: 15, fontWeight: 500, padding: '12px 24px', borderRadius: 10, border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>
+          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#000', color:'#94A3B8', fontSize:15, fontWeight:500, padding:'12px 24px', borderRadius:10, border:'0.5px solid rgba(255,255,255,0.1)', cursor:'pointer' }}>
             Ajánlatot kérek
           </button>
         </div>
-
-        {/* Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 26, fontWeight: 500, color: '#F1F5F9' }}>13</div>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a4a', marginTop: 2 }}>Vezető márka</div>
-          </div>
-          <div style={{ width: 0.5, height: 32, background: 'rgba(0,255,239,0.1)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 26, fontWeight: 500, color: '#F1F5F9' }}>1 nap</div>
-            <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a4a', marginTop: 2 }}>Válaszidő</div>
-          </div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.5rem', marginBottom:'2rem' }}>
+          <div style={{ textAlign:'center' }}><div style={{ fontSize:26, fontWeight:500, color:'#F1F5F9' }}>13</div><div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.06em', color:'#2a3a4a', marginTop:2 }}>Vezető márka</div></div>
+          <div style={{ width:0.5, height:32, background:'rgba(0,255,239,0.1)' }} />
+          <div style={{ textAlign:'center' }}><div style={{ fontSize:26, fontWeight:500, color:'#F1F5F9' }}>1 nap</div><div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.06em', color:'#2a3a4a', marginTop:2 }}>Válaszidő</div></div>
         </div>
-
-        <div style={{ width: 40, height: 0.5, background: 'rgba(0,255,239,0.15)', margin: '0 auto 2rem' }} />
-
-        {/* Live hours */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 500, padding: '5px 14px', borderRadius: 20, background: isOpen ? 'rgba(0,255,239,0.07)' : 'rgba(0,0,0,0.4)', border: isOpen ? '0.5px solid rgba(0,255,239,0.22)' : '0.5px solid rgba(239,68,68,0.2)', color: isOpen ? '#00FFEF' : '#F87171' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: isOpen ? '#00FFEF' : '#EF4444', display: 'inline-block' }} />
+        <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'0 auto 2rem' }} />
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:7, fontSize:13, fontWeight:500, padding:'5px 14px', borderRadius:20, background: isOpen ? 'rgba(0,255,239,0.07)' : 'rgba(0,0,0,0.4)', border: isOpen ? '0.5px solid rgba(0,255,239,0.22)' : '0.5px solid rgba(239,68,68,0.2)', color: isOpen ? '#00FFEF' : '#F87171' }}>
+            <span style={{ width:6, height:6, borderRadius:'50%', background: isOpen ? '#00FFEF' : '#EF4444', display:'inline-block' }} />
             {statusText}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.2rem' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.2rem' }}>
             {DISPLAY_HOURS.map((d, i) => {
               const isToday = todayIdx >= d.range[0] && todayIdx <= d.range[1];
               return (
-                <div key={d.label} style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-                  {i > 0 && <div style={{ width: 0.5, height: 26, background: 'rgba(255,255,255,0.05)' }} />}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: isToday ? '#00FFEF' : '#2a3a4a' }}>{d.label}</div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: isToday ? '#00FFEF' : d.time === 'Zárva' ? '#2a3a4a' : '#4a6080' }}>{d.time}</div>
+                <div key={d.label} style={{ display:'flex', alignItems:'center', gap:'1.2rem' }}>
+                  {i > 0 && <div style={{ width:0.5, height:26, background:'rgba(255,255,255,0.05)' }} />}
+                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+                    <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color: isToday ? '#00FFEF' : '#2a3a4a' }}>{d.label}</div>
+                    <div style={{ fontSize:13, fontWeight:500, color: isToday ? '#00FFEF' : d.time === 'Zárva' ? '#2a3a4a' : '#4a6080' }}>{d.time}</div>
                   </div>
                 </div>
               );
@@ -236,10 +184,7 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.25} }
-      `}</style>
+      <style>{`@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.25} }`}</style>
     </section>
   );
 }
