@@ -3,6 +3,26 @@ import { useState } from 'react';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
+const inputStyle: React.CSSProperties = {
+  fontSize: 14,
+  padding: '10px 14px',
+  border: '1px solid rgba(0,255,239,0.2)',
+  borderRadius: 8,
+  background: '#060d18',
+  color: '#ffffff',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+};
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: '#8899aa',
+  display: 'block',
+  marginBottom: 4,
+};
+
 export default function ContactForm() {
   const [state, setState] = useState<FormState>('idle');
   const [form, setForm] = useState({ nev: '', telefon: '', email: '', tema: '', uzenet: '' });
@@ -23,35 +43,52 @@ export default function ContactForm() {
     }
   };
 
+  const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = '#00FFEF';
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,255,239,0.1)';
+  };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = 'rgba(0,255,239,0.2)';
+    e.currentTarget.style.boxShadow = 'none';
+  };
+
   if (state === 'success') {
     return (
-      <div className="text-center py-12">
-        <div className="text-4xl mb-4">✅</div>
-        <h3 className="text-lg font-medium text-slate-900 mb-2">Köszönjük megkeresését!</h3>
-        <p className="text-sm text-slate-500">1 munkanapon belül felvesszük Önnel a kapcsolatot.</p>
+      <div style={{ textAlign: 'center', padding: '3rem 0' }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
+        <h3 style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', marginBottom: 8 }}>Köszönjük megkeresését!</h3>
+        <p style={{ fontSize: 14, color: '#8899aa' }}>1 munkanapon belül felvesszük Önnel a kapcsolatot.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-[13px] text-slate-500">Neve *</label>
-          <input className="text-[14px] px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:border-blue-400" placeholder="Kovács János" value={form.nev} onChange={e => setForm(p => ({ ...p, nev: e.target.value }))} />
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <div>
+          <label style={labelStyle}>Neve *</label>
+          <input style={inputStyle} placeholder="Kovács János" value={form.nev}
+            onChange={e => setForm(p => ({ ...p, nev: e.target.value }))}
+            onFocus={onFocus} onBlur={onBlur} />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[13px] text-slate-500">Telefon *</label>
-          <input className="text-[14px] px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:border-blue-400" placeholder="+36 30 ..." value={form.telefon} onChange={e => setForm(p => ({ ...p, telefon: e.target.value }))} />
+        <div>
+          <label style={labelStyle}>Telefon *</label>
+          <input style={inputStyle} placeholder="+36 30 ..." value={form.telefon}
+            onChange={e => setForm(p => ({ ...p, telefon: e.target.value }))}
+            onFocus={onFocus} onBlur={onBlur} />
         </div>
       </div>
-      <div className="flex flex-col gap-1 mb-3">
-        <label className="text-[13px] text-slate-500">E-mail cím</label>
-        <input className="text-[14px] px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:border-blue-400" placeholder="pelda@email.hu" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+      <div style={{ marginBottom: 12 }}>
+        <label style={labelStyle}>E-mail cím</label>
+        <input style={inputStyle} placeholder="pelda@email.hu" value={form.email}
+          onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+          onFocus={onFocus} onBlur={onBlur} />
       </div>
-      <div className="flex flex-col gap-1 mb-3">
-        <label className="text-[13px] text-slate-500">Mire van szüksége?</label>
-        <select className="text-[14px] px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:border-blue-400" value={form.tema} onChange={e => setForm(p => ({ ...p, tema: e.target.value }))}>
+      <div style={{ marginBottom: 12 }}>
+        <label style={labelStyle}>Mire van szüksége?</label>
+        <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.tema}
+          onChange={e => setForm(p => ({ ...p, tema: e.target.value }))}
+          onFocus={onFocus} onBlur={onBlur}>
           <option value="">Válasszon témát...</option>
           <option>Kábel / vezeték</option>
           <option>Kapcsoló / dugalj</option>
@@ -61,15 +98,25 @@ export default function ContactForm() {
           <option>Egyéb</option>
         </select>
       </div>
-      <div className="flex flex-col gap-1 mb-4">
-        <label className="text-[13px] text-slate-500">Üzenet (opcionális)</label>
-        <textarea className="text-[14px] px-3 py-2.5 border border-slate-200 rounded-lg bg-white text-slate-900 focus:outline-none focus:border-blue-400 resize-y min-h-[88px]" placeholder="Pl. mire keresnek megoldást..." value={form.uzenet} onChange={e => setForm(p => ({ ...p, uzenet: e.target.value }))} />
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Üzenet (opcionális)</label>
+        <textarea
+          style={{ ...inputStyle, resize: 'vertical', minHeight: 88 }}
+          placeholder="Pl. mire keresnek megoldást..."
+          value={form.uzenet}
+          onChange={e => setForm(p => ({ ...p, uzenet: e.target.value }))}
+          onFocus={onFocus} onBlur={onBlur} />
       </div>
-      {state === 'error' && <p className="text-red-500 text-[13px] mb-3">Hiba történt. Kérjük, próbálja újra.</p>}
-      <button onClick={handleSubmit} disabled={state === 'loading'} className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-[15px] py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+      {state === 'error' && (
+        <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>Hiba történt. Kérjük, próbálja újra.</p>
+      )}
+      <button
+        onClick={handleSubmit}
+        disabled={state === 'loading'}
+        style={{ width: '100%', background: state === 'loading' ? 'rgba(0,255,239,0.5)' : '#00FFEF', color: '#000', fontSize: 15, fontWeight: 700, padding: '13px 24px', borderRadius: 50, border: 'none', cursor: state === 'loading' ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         {state === 'loading' ? 'Küldés...' : '→ Ajánlatot kérek'}
       </button>
-      <p className="text-[12px] text-slate-400 text-center mt-3">Adatait bizalmasan kezeljük.</p>
+      <p style={{ fontSize: 12, color: '#8899aa', textAlign: 'center', marginTop: 12 }}>Adatait bizalmasan kezeljük.</p>
     </div>
   );
 }

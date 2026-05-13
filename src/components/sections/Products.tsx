@@ -11,20 +11,28 @@ const PRODUCTS = [
 
 export default function Products() {
   return (
-    <section id="termekek" style={{ padding: '4rem 2rem', background: '#fff' }}>
+    <section id="termekek" style={{ padding: '4rem 2rem', background: '#060d18' }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Termékkörök</p>
-        <h2 style={{ fontSize: 26, fontWeight: 500, color: '#0F172A', marginBottom: 4 }}>Mindent egy helyen</h2>
-        <p style={{ fontSize: 14, color: '#64748B', marginBottom: 32 }}>Profi villanyszerelőktől a barkácsolóig — mindenki megtalálja, amire szüksége van.</p>
+        <p style={{ fontSize: 12, fontWeight: 600, color: '#00FFEF', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 6 }}>Termékkörök</p>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>Mindent egy helyen</h2>
+        <p style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Profi villanyszerelőktől a barkácsolóig — mindenki megtalálja, amire szüksége van.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {PRODUCTS.map(p => (
             <div key={p.title}
-              style={{ border: '0.5px solid #E2E8F0', borderRadius: 12, padding: '1.25rem', background: '#fff', transition: 'border-color 0.15s, box-shadow 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#BFDBFE'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={{ width: 40, height: 40, background: '#EFF6FF', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 12 }}>{p.icon}</div>
-              <h3 style={{ fontSize: 14, fontWeight: 500, color: '#0F172A', marginBottom: 4 }}>{p.title}</h3>
-              <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.6 }}>{p.desc}</p>
+              style={{ background: 'rgba(13,31,60,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 12, padding: '1.25rem', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d', cursor: 'default' }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-8px) rotateX(4deg) scale(1.02)';
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15)';
+                e.currentTarget.style.borderColor = 'rgba(0,255,239,0.4)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'translateY(0) rotateX(0) scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = 'rgba(0,255,239,0.15)';
+              }}>
+              <div style={{ width: 44, height: 44, background: 'rgba(0,255,239,0.07)', border: '0.5px solid rgba(0,255,239,0.15)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 14 }}>{p.icon}</div>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', marginBottom: 6 }}>{p.title}</h3>
+              <p style={{ fontSize: 13, color: '#8899aa', lineHeight: 1.6 }}>{p.desc}</p>
             </div>
           ))}
         </div>

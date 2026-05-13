@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const SCHEDULE = [
   { day: 'Hétfő',     from: 8, to: 16 },
@@ -33,6 +33,36 @@ const DISPLAY_HOURS = [
   { label: 'Szo', time: '8:00–12:00', range: [5, 5] as [number, number] },
   { label: 'Vas', time: 'Zárva',      range: [6, 6] as [number, number] },
 ];
+
+function AnimatedStat({ target, suffix = '', label }: { target: number; suffix?: string; label: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      let current = 0;
+      const step = () => {
+        current += 1;
+        setCount(current);
+        if (current < target) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <div ref={ref} style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: 26, fontWeight: 700, color: '#F1F5F9' }}>{count}{suffix}</div>
+      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8899aa', marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -137,33 +167,42 @@ export default function Hero() {
     <section style={{ background:'#060d18', minHeight:540, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <canvas ref={canvasRef} style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
+      <canvas ref={canvasRef} className="animate-float" style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
+
       <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>
           <span style={{ width:6, height:6, borderRadius:'50%', background:'#00FFEF', display:'inline-block', animation:'pulseDot 2s infinite' }} />
           Velence · Fecske utca 12.
         </div>
-        <h1 style={{ fontSize:38, fontWeight:500, color:'#F1F5F9', lineHeight:1.22, marginBottom:'1rem', fontFamily:'system-ui, sans-serif' }}>
+
+        <h1 style={{ fontSize:38, fontWeight:700, color:'#F1F5F9', lineHeight:1.22, marginBottom:'1rem' }}>
           Villanyszerelési anyagok —<br /><em style={{ fontStyle:'normal', color:'#00FFEF' }}>szakértői szinten</em>
         </h1>
-        <p style={{ fontSize:15, color:'#4a6080', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
+
+        <p style={{ fontSize:15, color:'#8899aa', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
           13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
+
         <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap', marginBottom:'2.5rem' }}>
-          <a href="tel:+36306182165" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#00FFEF', color:'#000', fontSize:15, fontWeight:600, padding:'12px 24px', borderRadius:10, textDecoration:'none', boxShadow:'0 0 24px rgba(0,255,239,0.25)' }}>
+          <a href="tel:+36306182165" style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#00FFEF', color:'#000', fontSize:15, fontWeight:700, padding:'12px 28px', borderRadius:50, textDecoration:'none', boxShadow:'0 0 24px rgba(0,255,239,0.25)', transition:'all 0.3s ease' }}>
             📞 Hívjon most · +36 30 618 2165
           </a>
-          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#000', color:'#94A3B8', fontSize:15, fontWeight:500, padding:'12px 24px', borderRadius:10, border:'0.5px solid rgba(255,255,255,0.1)', cursor:'pointer' }}>
+          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'transparent', color:'#ffffff', fontSize:15, fontWeight:500, padding:'12px 28px', borderRadius:50, border:'1px solid rgba(255,255,255,0.2)', cursor:'pointer', transition:'all 0.3s ease' }}>
             Ajánlatot kérek
           </button>
         </div>
+
+        {/* Stats */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.5rem', marginBottom:'2rem' }}>
-          <div style={{ textAlign:'center' }}><div style={{ fontSize:26, fontWeight:500, color:'#F1F5F9' }}>13</div><div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.06em', color:'#2a3a4a', marginTop:2 }}>Vezető márka</div></div>
+          <AnimatedStat target={13} label="Vezető márka" />
           <div style={{ width:0.5, height:32, background:'rgba(0,255,239,0.1)' }} />
-          <div style={{ textAlign:'center' }}><div style={{ fontSize:26, fontWeight:500, color:'#F1F5F9' }}>1 nap</div><div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.06em', color:'#2a3a4a', marginTop:2 }}>Válaszidő</div></div>
+          <AnimatedStat target={1} suffix=" nap" label="Válaszidő" />
         </div>
+
         <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'0 auto 2rem' }} />
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+
+        {/* Opening hours — centered, max-width 400px */}
+        <div style={{ maxWidth:400, margin:'0 auto', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
           <div style={{ display:'inline-flex', alignItems:'center', gap:7, fontSize:13, fontWeight:500, padding:'5px 14px', borderRadius:20, background: isOpen ? 'rgba(0,255,239,0.07)' : 'rgba(0,0,0,0.4)', border: isOpen ? '0.5px solid rgba(0,255,239,0.22)' : '0.5px solid rgba(239,68,68,0.2)', color: isOpen ? '#00FFEF' : '#F87171' }}>
             <span style={{ width:6, height:6, borderRadius:'50%', background: isOpen ? '#00FFEF' : '#EF4444', display:'inline-block' }} />
             {statusText}
@@ -175,8 +214,8 @@ export default function Hero() {
                 <div key={d.label} style={{ display:'flex', alignItems:'center', gap:'1.2rem' }}>
                   {i > 0 && <div style={{ width:0.5, height:26, background:'rgba(255,255,255,0.05)' }} />}
                   <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
-                    <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color: isToday ? '#00FFEF' : '#2a3a4a' }}>{d.label}</div>
-                    <div style={{ fontSize:13, fontWeight:500, color: isToday ? '#00FFEF' : d.time === 'Zárva' ? '#2a3a4a' : '#4a6080' }}>{d.time}</div>
+                    <div style={{ fontSize:11, textTransform:'uppercase', letterSpacing:'0.07em', color: isToday ? '#00FFEF' : '#8899aa' }}>{d.label}</div>
+                    <div style={{ fontSize:13, fontWeight:500, color: isToday ? '#00FFEF' : d.time === 'Zárva' ? '#4a5568' : '#8899aa' }}>{d.time}</div>
                   </div>
                 </div>
               );

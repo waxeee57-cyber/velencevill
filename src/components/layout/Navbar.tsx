@@ -17,10 +17,11 @@ export default function Navbar() {
       position: 'sticky', top: 0, zIndex: 50,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 2rem', height: 64,
-      background: scrolled ? 'rgba(6,13,24,0.96)' : '#060d18',
-      backdropFilter: scrolled ? 'blur(12px)' : 'none',
-      borderBottom: '0.5px solid rgba(255,255,255,0.06)',
-      transition: 'all 0.3s',
+      background: scrolled ? 'rgba(6,13,24,0.85)' : '#060d18',
+      backdropFilter: scrolled ? 'blur(20px)' : 'none',
+      WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+      borderBottom: scrolled ? '1px solid rgba(0,255,239,0.1)' : '0.5px solid rgba(255,255,255,0.06)',
+      transition: 'all 0.3s ease',
     }}>
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -29,21 +30,26 @@ export default function Navbar() {
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
         </div>
-        <span style={{ fontSize: 15, fontWeight: 500, color: 'white', fontFamily: 'system-ui, sans-serif' }}>
+        <span style={{ fontSize: 15, fontWeight: 500, color: 'white' }}>
           Velence <span style={{ color: '#00FFEF' }}>Vill</span> Kft.
         </span>
       </div>
 
-      {/* Links */}
+      {/* Nav links + CTA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
         {[['Termékek','termekek'],['Márkák','markak'],['Villanyszerelő','szerelo']].map(([label, id]) => (
-          <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', fontSize: 14, color: '#64748B', cursor: 'pointer', fontFamily: 'system-ui, sans-serif', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+          <button key={id} onClick={() => scrollTo(id)}
+            style={{ background: 'none', border: 'none', fontSize: 14, color: '#64748B', cursor: 'pointer', transition: 'color 0.15s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
             onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>
             {label}
           </button>
         ))}
-        <button onClick={() => scrollTo('ajanlat')} style={{ background: '#00FFEF', color: '#000', fontSize: 14, fontWeight: 600, padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
+        <button
+          onClick={() => scrollTo('ajanlat')}
+          style={{ background: '#00FFEF', color: '#000', fontSize: 14, fontWeight: 700, padding: '9px 20px', borderRadius: 50, border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 0 16px rgba(0,255,239,0.25)' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 28px rgba(0,255,239,0.45)'; e.currentTarget.style.transform = 'scale(1.04)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 16px rgba(0,255,239,0.25)'; e.currentTarget.style.transform = 'scale(1)'; }}>
           Ajánlatot kérek
         </button>
       </div>
