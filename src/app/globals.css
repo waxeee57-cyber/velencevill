@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cyan: #00FFEF;
+  --dark-base: #060d18;
+  --dark-card: #0a1628;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #0f172a;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Cyan glow utility */
+@layer utilities {
+  .glow-cyan {
+    box-shadow: 0 0 20px 4px rgba(0, 255, 239, 0.2);
+  }
+  .text-cyan-vill {
+    color: var(--cyan);
+  }
+  .border-cyan-vill {
+    border-color: var(--cyan);
+  }
+}
+
+/* Pulse animation for status dots */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Subtle float */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
