@@ -13,7 +13,7 @@ export default function Social() {
         <p style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Akciók, termékbemutatók és szakmai tippek — kövessen minket a közösségi médiában.</p>
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a
-            href="#"
+            href="https://www.facebook.com/profile.php?id=100094014010543"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('facebook_click')}
@@ -24,7 +24,7 @@ export default function Social() {
             Kövessen Facebookon
           </a>
           <a
-            href="#"
+            href="https://www.instagram.com/velence.vill/"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent('instagram_click')}

@@ -26,7 +26,7 @@ export default function MobileStickyBar() {
       </a>
 
       <a
-        href="https://www.google.com/maps/dir/?api=1&destination=47.2474,18.6421"
+        href="https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence"
         target="_blank"
         rel="noopener noreferrer"
         style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, gap: 3, transition: 'color 0.2s' }}
@@ -39,16 +39,14 @@ export default function MobileStickyBar() {
       </a>
 
       <a
-        href="https://wa.me/36306182165"
-        target="_blank"
-        rel="noopener noreferrer"
+        href="sms:+36306182165"
         style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, gap: 3, transition: 'color 0.2s' }}
         onMouseEnter={e => (e.currentTarget.style.color = '#00FFEF')}
         onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
         </svg>
-        WhatsApp
+        SMS
       </a>
 
       <button

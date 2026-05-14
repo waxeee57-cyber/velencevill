@@ -91,10 +91,10 @@ const localBusinessSchema = {
   paymentAccepted: 'Cash, Credit Card, Invoice',
   currenciesAccepted: 'HUF',
   areaServed: ['Velence', 'Gárdony', 'Agárd', 'Sukoró', 'Pákozd', 'Kápolnásnyék', 'Székesfehérvár', 'Fejér megye'],
-  hasMap: 'https://www.google.com/maps/search/?api=1&query=47.2474,18.6421',
+  hasMap: 'https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence',
   description: 'Villanyszerelési szaküzlet Velencén. Legrand, Schneider Electric, Tracon, EGLO és más vezető márkák forgalmazója.',
   sameAs: [
-    'https://www.facebook.com/velencevill',
+    'https://www.facebook.com/profile.php?id=100094014010543',
     'https://g.page/velencevill',
   ],
 };
@@ -124,7 +124,7 @@ const faqSchema = {
       name: 'Hol található a Velence Vill szaküzlet?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Velence, Fecske utca 12., 2481. Google Maps: https://www.google.com/maps/search/?api=1&query=47.2474,18.6421',
+        text: 'Velence, Fecske utca 12., 2481. Google Maps: https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence — Waze: https://waze.com/ul?q=Fecske+utca+12+Velence&navigate=yes',
       },
     },
   ],

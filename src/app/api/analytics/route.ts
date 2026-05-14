@@ -13,7 +13,7 @@ interface AnalyticsEvent {
 const events: AnalyticsEvent[] = [];
 
 const CTA_EVENTS = new Set([
-  'phone_click', 'whatsapp_click', 'map_click', 'waze_click',
+  'phone_click', 'sms_click', 'map_click', 'waze_click',
   'form_submit', 'chat_open', 'chat_message', 'facebook_click',
   'instagram_click', 'callback_click',
 ]);

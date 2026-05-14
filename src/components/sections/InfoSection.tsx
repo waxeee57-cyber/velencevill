@@ -42,7 +42,7 @@ export default function InfoSection() {
         <div className="reveal" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ borderRadius: 12, overflow: 'hidden', height: 250, border: '1px solid rgba(0,255,239,0.15)' }}>
             <iframe
-              src="https://maps.google.com/maps?q=47.2474,18.6421&hl=hu&z=16&output=embed"
+              src="https://maps.google.com/maps?q=Fecske+utca+12,+2481+Velence&hl=hu&z=16&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg)', display: 'block' }}
@@ -52,7 +52,7 @@ export default function InfoSection() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <a
-              href="https://www.google.com/maps/search/?api=1&query=47.2474,18.6421"
+              href="https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence"
               target="_blank" rel="noopener noreferrer"
               className="btn-secondary"
               onClick={() => trackEvent('map_click')}
@@ -60,7 +60,7 @@ export default function InfoSection() {
               📍 Google Maps
             </a>
             <a
-              href="https://waze.com/ul?ll=47.2474,18.6421&navigate=yes"
+              href="https://waze.com/ul?q=Fecske+utca+12+Velence&navigate=yes"
               target="_blank" rel="noopener noreferrer"
               className="btn-secondary"
               onClick={() => trackEvent('waze_click')}

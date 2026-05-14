@@ -104,7 +104,7 @@ export default function VarosPage({ params }: Props) {
 
             <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,255,239,0.15)', minHeight: 240 }}>
               <iframe
-                src="https://maps.google.com/maps?q=47.2474,18.6421&hl=hu&z=14&output=embed"
+                src="https://maps.google.com/maps?q=Fecske+utca+12,+2481+Velence&hl=hu&z=14&output=embed"
                 width="100%" height="240" style={{ border: 0, display: 'block', filter: 'invert(90%) hue-rotate(180deg)' }}
                 loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
             </div>
