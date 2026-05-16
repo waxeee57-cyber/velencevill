@@ -50,7 +50,7 @@ export default function Brands() {
               <img
                 src={`/brands/${b.slug}.svg`}
                 alt={b.name}
-                style={{ height: 36, width: 'auto', marginBottom: 2, opacity: 0.9, borderRadius: 3 }}
+                style={{ height: 36, width: 'auto', marginBottom: 2, opacity: 0.85, borderRadius: 3, filter: 'brightness(0) invert(1)' }}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.3 }}>

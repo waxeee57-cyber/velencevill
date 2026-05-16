@@ -20,20 +20,19 @@ const brands = [
 const brandsDir = path.join(process.cwd(), 'public', 'brands');
 if (!fs.existsSync(brandsDir)) fs.mkdirSync(brandsDir, { recursive: true });
 
-brands.forEach(({ name, sub, slug, color, bg }) => {
+brands.forEach(({ name, sub, slug, color }) => {
   const hasSubLine = sub && sub.length > 0;
   const displayName = name;
   const fontSize = displayName.length > 7 ? 22 : 28;
 
+  // Transparent background — sits cleanly on dark glass cards
   const svg = hasSubLine
     ? `<svg width="160" height="60" xmlns="http://www.w3.org/2000/svg">
-  <rect width="160" height="60" fill="${bg}" rx="4"/>
-  <text x="80" y="24" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" fill="${color}" text-anchor="middle">${displayName}</text>
-  <text x="80" y="46" font-family="Arial, sans-serif" font-size="18" font-weight="500" fill="${color}" text-anchor="middle">${sub}</text>
+  <text x="80" y="26" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="800" fill="${color}" text-anchor="middle" letter-spacing="1">${displayName}</text>
+  <text x="80" y="46" font-family="Arial, sans-serif" font-size="16" font-weight="600" fill="${color}" text-anchor="middle" opacity="0.75">${sub}</text>
 </svg>`
     : `<svg width="160" height="60" xmlns="http://www.w3.org/2000/svg">
-  <rect width="160" height="60" fill="${bg}" rx="4"/>
-  <text x="80" y="38" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700" fill="${color}" text-anchor="middle">${displayName}</text>
+  <text x="80" y="38" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="800" fill="${color}" text-anchor="middle" letter-spacing="1">${displayName}</text>
 </svg>`;
 
   fs.writeFileSync(path.join(brandsDir, `${slug}.svg`), svg, 'utf8');

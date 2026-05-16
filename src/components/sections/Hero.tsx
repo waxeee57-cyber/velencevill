@@ -170,18 +170,17 @@ export default function Hero() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    canvas.style.transform = 'translate(-50%, -50%)';
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const heroHeight = 560; // matches minHeight of section
+      const heroHeight = 560;
       const progress = Math.min(scrollY / heroHeight, 1);
 
-      // On desktop: slide from current position toward top-right
-      // On mobile: just fade out
       if (window.innerWidth >= 768) {
-        // Move right and up as user scrolls
-        const moveX = progress * 120; // px to the right
-        const moveY = progress * -80; // px upward
-        canvas.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        const moveX = progress * 160;
+        const moveY = progress * -120;
+        canvas.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
       }
       canvas.style.opacity = String(Math.max(0.8 - progress * 0.5, 0.3));
     };
@@ -194,7 +193,7 @@ export default function Hero() {
     <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <canvas ref={canvasRef} aria-hidden="true" className="hero-canvas animate-float" style={{}} />
+      <canvas ref={canvasRef} aria-hidden="true" className="hero-canvas" style={{}} />
 
       <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>
