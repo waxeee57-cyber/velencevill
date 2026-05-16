@@ -1,6 +1,7 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/sections/Hero';
+import CalculatorHub from '@/components/CalculatorHub';
 import InfoSection from '@/components/sections/InfoSection';
 import Products from '@/components/sections/Products';
 import Brands from '@/components/sections/Brands';
@@ -25,6 +26,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero />
+        <CalculatorHub />
         <InfoSection />
 
         {/* Brand ticker */}
