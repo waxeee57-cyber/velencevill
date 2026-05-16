@@ -36,15 +36,17 @@ export default function Navbar() {
 
       {/* Nav links + CTA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        {[['Termékek','/termekek'],['Márkák','/markak'],['Villanyszerelő','/szerelo'],['Tudástár','/tudastar'],['Kalkulátor','/kalkulator']].map(([label, href]) => (
-          <Link key={href} href={href}
-            style={{ fontSize: 14, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>
-            {label}
-          </Link>
-        ))}
-        <Link href="/#ajanlat" className="btn-primary" style={{ textDecoration: 'none', padding: '9px 20px', fontSize: 14 }}>
+        <div className="nav-links">
+          {[['Termékek','/termekek'],['Márkák','/markak'],['Villanyszerelő','/szerelo'],['Tudástár','/tudastar'],['Kalkulátor','/kalkulator']].map(([label, href]) => (
+            <Link key={href} href={href}
+              style={{ fontSize: 14, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>
+              {label}
+            </Link>
+          ))}
+        </div>
+        <Link href="/#ajanlat" className="btn-primary" style={{ textDecoration: 'none', padding: '9px 16px', fontSize: 13 }}>
           Ajánlatot kérek
         </Link>
       </div>

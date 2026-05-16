@@ -6,7 +6,7 @@ export default function MobileStickyBar() {
 
   return (
     <div
-      className="flex md:hidden"
+      className="flex md:hidden mobile-sticky-bar"
       style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 60,
         background: 'rgba(6,13,24,0.95)',

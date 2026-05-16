@@ -16,6 +16,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://velencevill.hu';
 
 export const viewport: Viewport = {
   themeColor: '#00FFEF',
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | Velence Vill Kft.',
   },
   description:
-    'Villanyszerelési anyagok, kábelek, kapcsolók, elosztók és világítástechnika Velencén. 13 vezető márka: Legrand, Schneider Electric, Tracon, EGLO és még több. Személyes kiszolgálás, gyors elérés.',
+    'Villanyszerelési anyagok, kábelek, kapcsolók, elosztók és világítástechnika Velencén. 10+ vezető márka: Legrand, Schneider Electric, Tracon, EGLO és még több. Személyes kiszolgálás, gyors elérés.',
   keywords: [
     'villanyszerelési szaküzlet',
     'villanyszerelési anyag',
@@ -43,7 +44,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   openGraph: {
     title: 'Velence Vill Kft. — Villanyszerelési szaküzlet',
-    description: '13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak.',
+    description: '10+ vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak.',
     url: SITE_URL,
     siteName: 'Velence Vill Kft.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Velence Vill Kft. – Villanyszerelési szaküzlet Velencén' }],
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Velence Vill Kft. – Villanyszerelési szaküzlet',
-    description: 'Villanyszerelési anyagok Velencén. 13 vezető márka, személyes kiszolgálás.',
+    description: 'Villanyszerelési anyagok Velencén. 10+ vezető márka, személyes kiszolgálás.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -116,7 +117,7 @@ const faqSchema = {
       name: 'Milyen márkákat forgalmaz a Velence Vill Kft.?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: '13 vezető márkát: Tracon, Schneider Electric, Legrand, Kanlux, Rábalux, EGLO, GLOBO, EMOS, KOPP, OBO, Csatári Plast, Famatel, Mentavill.',
+        text: '10+ vezető márkát: Tracon, Schneider Electric, Legrand, Kanlux, Rábalux, EGLO, GLOBO, EMOS, KOPP, OBO, Csatári Plast, Famatel, Mentavill.',
       },
     },
     {
