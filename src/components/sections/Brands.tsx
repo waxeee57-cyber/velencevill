@@ -3,19 +3,19 @@ import { useState } from 'react';
 import { useReveal } from '@/hooks/useReveal';
 
 const BRANDS = [
-  { name: 'TRACON',    sub: 'Electric',  tag: 'Szerelés',    link: 'https://www.traconelectric.com' },
-  { name: 'Schneider', sub: 'Electric',  tag: 'Automatika',  link: 'https://www.se.com/hu' },
-  { name: 'LEGRAND',   sub: '',          tag: 'Kapcsolók',   link: 'https://www.legrand.hu' },
-  { name: 'Kanlux',    sub: '',          tag: 'Világítás',   link: 'https://www.kanlux.com' },
-  { name: 'Rábalux',   sub: '',          tag: 'Lámpák',      link: 'https://www.rabalux.com' },
-  { name: 'EGLO',      sub: '',          tag: 'Design lámpa',link: 'https://www.eglo.com' },
-  { name: 'GLOBO',     sub: '',          tag: 'Világítás',   link: 'https://www.globo-lighting.com' },
-  { name: 'EMOS',      sub: '',          tag: 'Szerelvény',  link: 'https://www.emos.eu' },
-  { name: 'KOPP',      sub: '',          tag: 'Kapcsolók',   link: 'https://www.kopp.de' },
-  { name: 'OBO',       sub: '',          tag: 'Csatornák',   link: 'https://www.obo.de' },
-  { name: 'Csatári',   sub: 'Plast',     tag: 'Szekrények',  link: 'https://www.csatariplast.hu' },
-  { name: 'Famatel',   sub: '',          tag: 'Elosztók',    link: 'https://www.famatel.com' },
-  { name: 'Mentavill', sub: '',          tag: 'Nagyker',     link: 'https://www.mentavill.hu' },
+  { name: 'TRACON',    sub: 'Electric',  tag: 'Szerelés',    link: 'https://www.traconelectric.com', slug: 'tracon' },
+  { name: 'Schneider', sub: 'Electric',  tag: 'Automatika',  link: 'https://www.se.com/hu',          slug: 'schneider' },
+  { name: 'LEGRAND',   sub: '',          tag: 'Kapcsolók',   link: 'https://www.legrand.hu',          slug: 'legrand' },
+  { name: 'Kanlux',    sub: '',          tag: 'Világítás',   link: 'https://www.kanlux.com',          slug: 'kanlux' },
+  { name: 'Rábalux',   sub: '',          tag: 'Lámpák',      link: 'https://www.rabalux.com',         slug: 'rabalux' },
+  { name: 'EGLO',      sub: '',          tag: 'Design lámpa',link: 'https://www.eglo.com',            slug: 'eglo' },
+  { name: 'GLOBO',     sub: '',          tag: 'Világítás',   link: 'https://www.globo-lighting.com',  slug: 'globo' },
+  { name: 'EMOS',      sub: '',          tag: 'Szerelvény',  link: 'https://www.emos.eu',             slug: 'emos' },
+  { name: 'KOPP',      sub: '',          tag: 'Kapcsolók',   link: 'https://www.kopp.de',             slug: 'kopp' },
+  { name: 'OBO',       sub: '',          tag: 'Csatornák',   link: 'https://www.obo.de',              slug: 'obo' },
+  { name: 'Csatári',   sub: 'Plast',     tag: 'Szekrények',  link: 'https://www.csatariplast.hu',     slug: 'csatari' },
+  { name: 'Famatel',   sub: '',          tag: 'Elosztók',    link: 'https://www.famatel.com',         slug: 'famatel' },
+  { name: 'Mentavill', sub: '',          tag: 'Nagyker',     link: 'https://www.mentavill.hu',        slug: 'mentavill' },
 ];
 
 export default function Brands() {
@@ -26,7 +26,7 @@ export default function Brands() {
     <section id="markak" ref={ref} style={{ padding: '4rem 2rem', background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
         <p className="section-label reveal" style={{ marginBottom: 6 }}>Forgalmazott márkák</p>
-        <h2 className="reveal" style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>13 vezető gyártó — egy helyen</h2>
+        <h2 className="reveal" style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>10+ vezető gyártó — egy helyen</h2>
         <p className="reveal" style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Az iparág legelismertebb márkáit forgalmazzuk szaküzletünkben</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
           {BRANDS.map(b => (
@@ -46,6 +46,13 @@ export default function Brands() {
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.12)';
               }}>
               <div style={{ position: 'absolute', top: 7, right: 9, fontSize: 11, color: '#00FFEF', opacity: hovered === b.name ? 1 : 0, transition: 'opacity 0.2s' }}>↗</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/brands/${b.slug}.svg`}
+                alt={b.name}
+                style={{ height: 36, width: 'auto', marginBottom: 2, opacity: 0.9, borderRadius: 3 }}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', textAlign: 'center', lineHeight: 1.3 }}>
                 {b.name}{b.sub && <><br /><span style={{ fontSize: 11, fontWeight: 500, color: '#8899aa' }}>{b.sub}</span></>}
               </div>

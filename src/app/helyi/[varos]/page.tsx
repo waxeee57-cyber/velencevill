@@ -20,7 +20,7 @@ export function generateMetadata({ params }: Props): Metadata {
   if (!city) return {};
   return {
     title: `Villanyszerelési anyag ${city.name} — Velence Vill Kft.`,
-    description: `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. 13 vezető márka: Legrand, Schneider Electric, Tracon, EGLO. ${city.leiras}.`,
+    description: `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. 10+ vezető márka: Legrand, Schneider Electric, Tracon, EGLO. ${city.leiras}.`,
     keywords: [`villanyszerelési anyag ${city.name}`, `villamos szaküzlet ${city.name}`, 'Velence Vill', 'villanyszerelő Fejér megye'],
   };
 }
@@ -77,7 +77,7 @@ export default function VarosPage({ params }: Props) {
             Villanyszerelési anyagok {city.name} közelében
           </h1>
           <p style={{ fontSize: 15, color: '#8899aa', marginBottom: 48, maxWidth: 560 }}>
-            {city.leiras}. Velence Vill Kft. szaküzletünkben 13 vezető márka termékei közül választhat. Személyes kiszolgálás, szakértői tanácsadás.
+            {city.leiras}. Velence Vill Kft. szaküzletünkben 10+ vezető márka termékei közül választhat. Személyes kiszolgálás, szakértői tanácsadás.
           </p>
 
           {/* Product categories */}
