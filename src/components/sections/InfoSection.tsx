@@ -42,6 +42,7 @@ export default function InfoSection() {
         <div className="reveal" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ borderRadius: 12, overflow: 'hidden', height: 250, border: '1px solid rgba(0,255,239,0.15)' }}>
             <iframe
+              title="Velence Vill Kft. helyszín a térképen"
               src="https://maps.google.com/maps?q=Fecske+utca+12,+2481+Velence&hl=hu&z=16&output=embed"
               width="100%"
               height="100%"

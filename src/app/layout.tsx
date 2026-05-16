@@ -44,9 +44,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Velence Vill Kft. — Villanyszerelési szaküzlet',
     description: '13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak.',
-    url: 'https://velencevill.hu',
+    url: SITE_URL,
     siteName: 'Velence Vill Kft.',
-    images: [{ url: '/og-image.svg', width: 1200, height: 630 }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Velence Vill Kft. – Villanyszerelési szaküzlet Velencén' }],
     locale: 'hu_HU',
     type: 'website',
   },
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Velence Vill Kft. – Villanyszerelési szaküzlet',
     description: 'Villanyszerelési anyagok Velencén. 13 vezető márka, személyes kiszolgálás.',
-    images: ['/og-image.svg'],
+    images: ['/og-image.jpg'],
   },
   robots: {
     index: true,
@@ -68,7 +68,7 @@ const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': ['LocalBusiness', 'ElectricalSupplyStore'],
   name: 'Velence Vill Kft.',
-  image: `${SITE_URL}/og-image.svg`,
+  image: `${SITE_URL}/og-image.jpg`,
   url: SITE_URL,
   telephone: '+36306182165',
   address: {
@@ -136,7 +136,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
       </head>
       <body className={`${spaceGrotesk.variable} antialiased`}>
         {children}

@@ -96,6 +96,8 @@ export default function ChatWidget() {
       <button
         onClick={step === 'closed' ? openWidget : close}
         className="chat-btn-wrap"
+        aria-label={step !== 'closed' ? 'Chat bezárása' : 'Chat megnyitása – Írjon nekünk'}
+        aria-expanded={step !== 'closed'}
         style={{ width: 56, height: 56, borderRadius: '50%', background: '#00FFEF', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 20px rgba(0,255,239,${pulse ? '0.6' : '0.3'})`, transition: 'all 0.3s ease', animation: pulse ? 'pulse-dot 2s infinite' : 'none' }}
         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
         onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>

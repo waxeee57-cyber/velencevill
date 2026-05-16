@@ -57,7 +57,7 @@ function AnimatedStat({ target, suffix = '', label }: { target: number; suffix?:
           }
         }, duration / steps);
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.1 });
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [target]);
@@ -170,7 +170,7 @@ export default function Hero() {
     <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <canvas ref={canvasRef} className="animate-float" style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
+      <canvas ref={canvasRef} className="animate-float" aria-hidden="true" style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
 
       <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>

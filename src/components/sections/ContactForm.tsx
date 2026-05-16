@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { trackEvent } from '@/utils/analytics';
+import Toast from '@/components/ui/Toast';
 
-type FormState = 'idle' | 'loading' | 'success' | 'error';
+type FormState = 'idle' | 'loading' | 'success';
 
 const inputStyle: React.CSSProperties = {
   fontSize: 14,
@@ -26,22 +27,32 @@ const labelStyle: React.CSSProperties = {
 
 export default function ContactForm() {
   const [state, setState] = useState<FormState>('idle');
-  const [form, setForm] = useState({ nev: '', telefon: '', email: '', tema: '', uzenet: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', subject: '', message: '' });
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const handleSubmit = async () => {
-    if (!form.nev || !form.telefon) return alert('Név és telefonszám kötelező.');
+    if (!form.name.trim()) {
+      setToast({ message: 'Kérjük adja meg a nevét.', type: 'error' });
+      return;
+    }
+    if (!form.phone.trim()) {
+      setToast({ message: 'Telefonszám kötelező.', type: 'error' });
+      return;
+    }
     setState('loading');
     trackEvent('form_submit');
     try {
       const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, tipus: 'szakuzlet' }),
+        body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error();
       setState('success');
+      trackEvent('form_success');
     } catch {
-      setState('error');
+      setState('idle');
+      setToast({ message: 'Hiba történt. Kérjük, próbálja újra.', type: 'error' });
     }
   };
 
@@ -65,60 +76,103 @@ export default function ContactForm() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', overflow: 'hidden' }}>
-      <div className="form-row-grid">
-        <div>
-          <label style={labelStyle}>Neve *</label>
-          <input style={inputStyle} placeholder="Kovács János" value={form.nev}
-            onChange={e => setForm(p => ({ ...p, nev: e.target.value }))}
-            onFocus={onFocus} onBlur={onBlur} />
+    <>
+      <div style={{ maxWidth: 480, margin: '0 auto', overflow: 'hidden' }}>
+        <div className="form-row-grid">
+          <div>
+            <label htmlFor="cf-name" style={labelStyle}>Neve *</label>
+            <input
+              id="cf-name"
+              style={inputStyle}
+              placeholder="Kovács János"
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              autoComplete="name"
+            />
+          </div>
+          <div>
+            <label htmlFor="cf-phone" style={labelStyle}>Telefon *</label>
+            <input
+              id="cf-phone"
+              type="tel"
+              style={inputStyle}
+              placeholder="+36 30 ..."
+              value={form.phone}
+              onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              autoComplete="tel"
+            />
+          </div>
         </div>
-        <div>
-          <label style={labelStyle}>Telefon *</label>
-          <input style={inputStyle} placeholder="+36 30 ..." value={form.telefon}
-            onChange={e => setForm(p => ({ ...p, telefon: e.target.value }))}
-            onFocus={onFocus} onBlur={onBlur} />
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="cf-email" style={labelStyle}>E-mail cím</label>
+          <input
+            id="cf-email"
+            type="email"
+            style={inputStyle}
+            placeholder="pelda@email.hu"
+            value={form.email}
+            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            autoComplete="email"
+          />
         </div>
+        <div style={{ marginBottom: 12 }}>
+          <label htmlFor="cf-subject" style={labelStyle}>Mire van szüksége?</label>
+          <select
+            id="cf-subject"
+            style={{ ...inputStyle, cursor: 'pointer' }}
+            value={form.subject}
+            onChange={e => setForm(p => ({ ...p, subject: e.target.value }))}
+            onFocus={onFocus}
+            onBlur={onBlur}>
+            <option value="">Válasszon témát...</option>
+            <option>Kábel / vezeték</option>
+            <option>Kapcsoló / dugalj</option>
+            <option>Elosztó / szekrény</option>
+            <option>Világítástechnika</option>
+            <option>Villanyszerelő ajánlás</option>
+            <option>Egyéb</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label htmlFor="cf-message" style={labelStyle}>Üzenet (opcionális)</label>
+          <textarea
+            id="cf-message"
+            style={{ ...inputStyle, resize: 'vertical', minHeight: 88 }}
+            placeholder="Pl. mire keresnek megoldást..."
+            value={form.message}
+            onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={state === 'loading'}
+          aria-label="Ajánlatkérő űrlap elküldése"
+          style={{
+            width: '100%',
+            background: state === 'loading' ? 'rgba(0,255,239,0.5)' : '#00FFEF',
+            color: '#000', fontSize: 15, fontWeight: 700,
+            padding: '13px 24px', borderRadius: 50, border: 'none',
+            cursor: state === 'loading' ? 'not-allowed' : 'pointer',
+            transition: 'all 0.3s ease',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+          {state === 'loading' ? 'Küldés...' : '→ Ajánlatot kérek'}
+        </button>
+        <p style={{ fontSize: 12, color: '#8899aa', textAlign: 'center', marginTop: 12 }}>
+          Adatait bizalmasan kezeljük.
+        </p>
       </div>
-      <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>E-mail cím</label>
-        <input style={inputStyle} placeholder="pelda@email.hu" value={form.email}
-          onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-          onFocus={onFocus} onBlur={onBlur} />
-      </div>
-      <div style={{ marginBottom: 12 }}>
-        <label style={labelStyle}>Mire van szüksége?</label>
-        <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.tema}
-          onChange={e => setForm(p => ({ ...p, tema: e.target.value }))}
-          onFocus={onFocus} onBlur={onBlur}>
-          <option value="">Válasszon témát...</option>
-          <option>Kábel / vezeték</option>
-          <option>Kapcsoló / dugalj</option>
-          <option>Elosztó / szekrény</option>
-          <option>Világítástechnika</option>
-          <option>Villanyszerelő ajánlás</option>
-          <option>Egyéb</option>
-        </select>
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Üzenet (opcionális)</label>
-        <textarea
-          style={{ ...inputStyle, resize: 'vertical', minHeight: 88 }}
-          placeholder="Pl. mire keresnek megoldást..."
-          value={form.uzenet}
-          onChange={e => setForm(p => ({ ...p, uzenet: e.target.value }))}
-          onFocus={onFocus} onBlur={onBlur} />
-      </div>
-      {state === 'error' && (
-        <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>Hiba történt. Kérjük, próbálja újra.</p>
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
-      <button
-        onClick={handleSubmit}
-        disabled={state === 'loading'}
-        style={{ width: '100%', background: state === 'loading' ? 'rgba(0,255,239,0.5)' : '#00FFEF', color: '#000', fontSize: 15, fontWeight: 700, padding: '13px 24px', borderRadius: 50, border: 'none', cursor: state === 'loading' ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        {state === 'loading' ? 'Küldés...' : '→ Ajánlatot kérek'}
-      </button>
-      <p style={{ fontSize: 12, color: '#8899aa', textAlign: 'center', marginTop: 12 }}>Adatait bizalmasan kezeljük.</p>
-    </div>
+    </>
   );
 }
