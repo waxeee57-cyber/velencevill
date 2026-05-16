@@ -166,11 +166,35 @@ export default function Hero() {
     return () => cancelAnimationFrame(animId);
   }, []);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const heroHeight = 560; // matches minHeight of section
+      const progress = Math.min(scrollY / heroHeight, 1);
+
+      // On desktop: slide from current position toward top-right
+      // On mobile: just fade out
+      if (window.innerWidth >= 768) {
+        // Move right and up as user scrolls
+        const moveX = progress * 120; // px to the right
+        const moveY = progress * -80; // px upward
+        canvas.style.transform = `translate(${moveX}px, ${moveY}px)`;
+      }
+      canvas.style.opacity = String(Math.max(0.8 - progress * 0.5, 0.3));
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <canvas ref={canvasRef} className="animate-float" aria-hidden="true" style={{ position:'absolute', top:-14, right:-14, pointerEvents:'none', zIndex:1, opacity:0.8 }} />
+      <canvas ref={canvasRef} aria-hidden="true" className="hero-canvas animate-float" style={{}} />
 
       <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>
@@ -183,7 +207,7 @@ export default function Hero() {
         </h1>
 
         <p style={{ fontSize:15, color:'#8899aa', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
-          13 vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
+          10+ vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
 
         {/* Persona fork */}
@@ -216,9 +240,7 @@ export default function Hero() {
         </div>
 
         <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.5rem', marginBottom:'2rem' }}>
-          <AnimatedStat target={13} label="Vezető márka" />
-          <div style={{ width:0.5, height:32, background:'rgba(0,255,239,0.1)' }} />
-          <AnimatedStat target={1} suffix=" nap" label="Válaszidő" />
+          <AnimatedStat target={10} suffix="+" label="Márka" />
         </div>
 
         <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'0 auto 2rem' }} />
