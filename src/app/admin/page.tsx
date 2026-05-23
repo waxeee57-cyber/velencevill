@@ -1,5 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import Toast from '@/components/ui/Toast';
 
 interface ChatMessage { role: 'user' | 'admin'; text: string; timestamp: number }
 interface ChatSession { id: string; nev: string; telefon: string; messages: ChatMessage[]; createdAt: number; read: boolean }
@@ -16,7 +18,7 @@ interface AnalyticsData {
   surveyResults: { found?: string; missing?: string; timestamp: number }[];
 }
 
-type Tab = 'chatok' | 'analitika' | 'leadek' | 'kerdoiv';
+type Tab = 'chatok' | 'analitika' | 'leadek' | 'kerdoiv' | 'vip';
 
 // ── Login ──────────────────────────────────────────────────────────────────────
 function LoginForm({ onAuth }: { onAuth: () => void }) {
@@ -304,6 +306,228 @@ function LeadsTab() {
   return <p style={{ fontSize: 14, color: '#8899aa' }}>Leadek betöltése...</p>;
 }
 
+// ── VIP Offers tab ─────────────────────────────────────────────────────────────
+interface VipOffer {
+  id: string;
+  title: string;
+  description?: string;
+  file_url?: string;
+  valid_until?: string;
+  active: boolean;
+  created_at: string;
+}
+
+function VipOffersTab() {
+  const [offers, setOffers] = useState<VipOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const sbRef = useRef<SupabaseClient | null>(null);
+
+  const [form, setForm] = useState({ title: '', description: '', valid_until: '' });
+
+  function getSb(): SupabaseClient {
+    if (!sbRef.current) {
+      sbRef.current = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+    }
+    return sbRef.current;
+  }
+
+  useEffect(() => { fetchOffers(); }, []);
+
+  async function fetchOffers() {
+    setLoading(true);
+    const { data } = await getSb()
+      .from('vip_offers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setOffers((data as VipOffer[]) || []);
+    setLoading(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim()) { setToast({ message: 'Cím kötelező', type: 'error' }); return; }
+    setSubmitting(true);
+    try {
+      let file_url: string | null = null;
+      const file = fileRef.current?.files?.[0];
+      if (file) {
+        const ext = file.name.split('.').pop();
+        const fileName = `vip-offers/${Date.now()}.${ext}`;
+        const { error: uploadError } = await getSb().storage
+          .from('vip-files')
+          .upload(fileName, file, { cacheControl: '3600', upsert: false });
+        if (uploadError) throw uploadError;
+        const { data: urlData } = getSb().storage.from('vip-files').getPublicUrl(fileName);
+        file_url = urlData.publicUrl;
+      }
+      const { error } = await getSb().from('vip_offers').insert({
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        valid_until: form.valid_until || null,
+        file_url,
+        active: true,
+      });
+      if (error) throw error;
+      setToast({ message: 'Ajánlat sikeresen feltöltve!', type: 'success' });
+      setForm({ title: '', description: '', valid_until: '' });
+      if (fileRef.current) fileRef.current.value = '';
+      fetchOffers();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ismeretlen hiba';
+      setToast({ message: `Hiba: ${msg}`, type: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function toggleActive(id: string, current: boolean) {
+    await getSb().from('vip_offers').update({ active: !current }).eq('id', id);
+    fetchOffers();
+  }
+
+  async function deleteOffer(id: string) {
+    await getSb().from('vip_offers').delete().eq('id', id);
+    fetchOffers();
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+      {/* Új ajánlat feltöltés */}
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
+        <p style={{ fontSize: 15, fontWeight: 600, color: '#00FFEF', marginBottom: 20 }}>Új VIP ajánlat feltöltése</p>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label htmlFor="vip-title" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Cím *</label>
+            <input
+              id="vip-title"
+              type="text"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="pl. Schneider kapcsolók -20% — csak VIP partnereknek"
+              disabled={submitting}
+              style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label htmlFor="vip-desc" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Leírás</label>
+            <textarea
+              id="vip-desc"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+              placeholder="Részletek, feltételek, megjegyzés..."
+              disabled={submitting}
+              style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', resize: 'none' }}
+            />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label htmlFor="vip-date" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Érvényes (opcionális)</label>
+              <input
+                id="vip-date"
+                type="date"
+                value={form.valid_until}
+                onChange={(e) => setForm({ ...form, valid_until: e.target.value })}
+                disabled={submitting}
+                style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+              />
+            </div>
+            <div>
+              <label htmlFor="vip-file" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Fájl (PDF, kép — opcionális)</label>
+              <input
+                id="vip-file"
+                type="file"
+                ref={fileRef}
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                disabled={submitting}
+                style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '8px 10px', color: '#8899aa', fontSize: 13, outline: 'none', cursor: 'pointer' }}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary"
+            style={{ justifyContent: 'center', padding: '12px 20px', opacity: submitting ? 0.5 : 1 }}
+          >
+            {submitting ? 'Feltöltés...' : 'Ajánlat közzététele'}
+          </button>
+        </form>
+      </div>
+
+      {/* Meglévő ajánlatok */}
+      <div>
+        <p style={{ fontSize: 15, fontWeight: 600, color: '#fff', marginBottom: 16 }}>Ajánlatok</p>
+        {loading ? (
+          <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>
+        ) : offers.length === 0 ? (
+          <p style={{ color: '#8899aa', fontSize: 14 }}>Még nincs feltöltve ajánlat.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {offers.map((offer) => (
+              <div
+                key={offer.id}
+                className="glass-card"
+                style={{ padding: '1rem', opacity: offer.active ? 1 : 0.5, borderColor: offer.active ? 'rgba(0,255,239,0.2)' : 'rgba(100,100,100,0.2)' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{offer.title}</span>
+                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: offer.active ? 'rgba(34,197,94,0.15)' : 'rgba(100,100,100,0.15)', color: offer.active ? '#22c55e' : '#8899aa' }}>
+                        {offer.active ? 'Aktív' : 'Inaktív'}
+                      </span>
+                    </div>
+                    {offer.description && (
+                      <p style={{ fontSize: 12, color: '#8899aa', marginBottom: 4 }}>{offer.description}</p>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 11, color: '#475569' }}>
+                      <span>{new Date(offer.created_at).toLocaleDateString('hu-HU')}</span>
+                      {offer.valid_until && (
+                        <span>Érvényes: {new Date(offer.valid_until).toLocaleDateString('hu-HU')}</span>
+                      )}
+                      {offer.file_url && (
+                        <a href={offer.file_url} target="_blank" rel="noopener noreferrer" style={{ color: '#00FFEF', opacity: 0.7 }}>
+                          Fájl megtekintése
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button
+                      onClick={() => toggleActive(offer.id, offer.active)}
+                      style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,255,239,0.2)', background: 'transparent', color: '#8899aa', cursor: 'pointer' }}
+                    >
+                      {offer.active ? 'Elrejt' : 'Aktivál'}
+                    </button>
+                    <button
+                      onClick={() => deleteOffer(offer.id)}
+                      style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                    >
+                      Töröl
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+    </div>
+  );
+}
+
 // ── Main admin page ────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -324,6 +548,7 @@ export default function AdminPage() {
     { id: 'analitika', label: '📊 Analitika' },
     { id: 'leadek',    label: '📋 Leadek' },
     { id: 'kerdoiv',   label: '📝 Kérdőív' },
+    { id: 'vip',       label: '⭐ VIP Ajánlatok' },
   ];
 
   return (
@@ -353,6 +578,7 @@ export default function AdminPage() {
         {tab === 'analitika' && <AnalyticsTab />}
         {tab === 'leadek'    && <LeadsTab />}
         {tab === 'kerdoiv'   && <KerdoivTab />}
+        {tab === 'vip'       && <VipOffersTab />}
       </div>
     </div>
   );
