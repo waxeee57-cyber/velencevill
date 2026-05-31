@@ -38,8 +38,8 @@ function BrandCard({ brand }: { brand: typeof brands[0] }) {
       aria-label={`${brand.name} – ${brand.category}`}
       className="reveal group glass-card p-6 flex flex-col items-center justify-center min-h-[160px] gap-3 transition-transform hover:scale-105"
     >
-      <div className="h-12 flex items-center justify-center w-full">
-        {!logoError ? (
+      {!logoError ? (
+        <div className="h-12 flex items-center justify-center w-full">
           <img
             src={logoSrc}
             alt={`${brand.name} logo`}
@@ -47,11 +47,13 @@ function BrandCard({ brand }: { brand: typeof brands[0] }) {
             className="h-full w-auto max-w-full object-contain brightness-0 invert opacity-70 group-hover:opacity-100 transition-opacity"
             loading="lazy"
           />
-        ) : (
-          <span className="text-base font-bold text-white text-center">{brand.name}</span>
-        )}
-      </div>
-      <span className="inline-block px-3 py-1 text-xs font-semibold bg-[#00FFEF]/10 text-[#00FFEF] rounded-full border border-[#00FFEF]/30">
+        </div>
+      ) : (
+        <span className="text-sm sm:text-base md:text-lg font-bold text-white text-center leading-tight break-words px-2">
+          {brand.name}
+        </span>
+      )}
+      <span className="inline-block px-3 py-1 text-xs font-semibold bg-[#00FFEF]/10 text-[#00FFEF] rounded-full border border-[#00FFEF]/30 whitespace-nowrap">
         {brand.category.toUpperCase()}
       </span>
     </a>

@@ -2,7 +2,6 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/sections/Hero';
 import CalculatorHub from '@/components/CalculatorHub';
-import InfoSection from '@/components/sections/InfoSection';
 import Products from '@/components/sections/Products';
 import Brands from '@/components/sections/Brands';
 import Reviews from '@/components/sections/Reviews';
@@ -27,7 +26,6 @@ export default function HomePage() {
       <main>
         <Hero />
         <CalculatorHub />
-        <InfoSection />
 
         {/* Brand ticker */}
         <div style={{ background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)', borderBottom: '0.5px solid rgba(0,255,239,0.08)', padding: '11px 0', overflow: 'hidden' }}>

@@ -44,7 +44,9 @@ export default function Hero() {
     let animId: number;
 
     import('three').then((THREE) => {
-      const W = 240, H = 260;
+      // Nagyobb, reszponzív villám: max 420px, mobilon a viewport 65%-a.
+      const W = Math.min(420, Math.round(window.innerWidth * 0.65));
+      const H = Math.round(W * 1.083);
       c.width = W * window.devicePixelRatio;
       c.height = H * window.devicePixelRatio;
       c.style.width = `${W}px`;
@@ -130,29 +132,6 @@ export default function Hero() {
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.style.transform = 'translate(-50%, -50%)';
-
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const heroHeight = 560;
-      const progress = Math.min(scrollY / heroHeight, 1);
-
-      if (window.innerWidth >= 768) {
-        const moveX = progress * 160;
-        const moveY = progress * -120;
-        canvas.style.transform = `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-      }
-      canvas.style.opacity = String(Math.max(0.8 - progress * 0.5, 0.3));
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
@@ -211,46 +190,46 @@ export default function Hero() {
         </div>
 
         {/* Térkép + gyorsgombok szekció */}
-        <div className="mt-12 md:mt-16 max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 md:gap-5 items-center">
+        <div className="mt-12 md:mt-16 max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 md:gap-4 items-stretch">
 
             {/* Bal: Google Maps gomb */}
             <a
               href="https://www.google.com/maps/dir/?api=1&destination=Velence+Vill+Kft+Fecske+utca+12+Velence"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-105"
+              className="group flex items-center justify-center px-5 py-3 md:px-6 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
               aria-label="Útvonal Google Maps-ben"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   className="text-[#00FFEF] group-hover:scale-110 transition-transform">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
-                      fill="currentColor"/>
-              </svg>
-              <span className="text-sm font-medium text-white whitespace-nowrap">
-                Google Maps
-              </span>
+              <div className="flex flex-col items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     className="text-[#00FFEF] group-hover:scale-110 transition-transform">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
+                        fill="currentColor"/>
+                </svg>
+                <span className="text-sm font-medium text-white whitespace-nowrap">
+                  Google Maps
+                </span>
+              </div>
             </a>
 
-            {/* Középen: Beágyazott mini térkép */}
-            <div className="relative rounded-xl overflow-hidden border border-[#00FFEF]/20 hover:border-[#00FFEF]/40 transition-colors group">
+            {/* Középen: Beágyazott térkép */}
+            <div className="relative rounded-xl overflow-hidden border border-[#00FFEF]/20 hover:border-[#00FFEF]/40 transition-colors group min-h-[220px] md:min-h-[260px]">
               {/* Cím badge bal felső */}
               <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-lg bg-[#060d18]/90 backdrop-blur-sm border border-[#00FFEF]/30 text-xs">
                 <span className="text-[#00FFEF]">📍</span>
                 <span className="text-white ml-1.5 font-medium">Fecske u. 12., Velence</span>
               </div>
 
-              {/* iframe térkép */}
+              {/* iframe térkép — kitölti a konténert */}
               <iframe
                 src="https://www.google.com/maps?q=Velence+Vill+Kft+Fecske+utca+12+Velence&output=embed"
-                width="100%"
-                height="180"
                 style={{ border: 0, filter: 'invert(0.92) hue-rotate(180deg) saturate(0.4) brightness(0.95)' }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Velence Vill Kft. helye"
-                className="w-full"
+                className="absolute inset-0 w-full h-full"
               />
 
               {/* Kattintási overlay (mobilon) */}
@@ -268,17 +247,19 @@ export default function Hero() {
               href="https://waze.com/ul?q=Velence+Vill+Kft+Fecske+utca+12+Velence&navigate=yes"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-105"
+              className="group flex items-center justify-center px-5 py-3 md:px-6 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
               aria-label="Útvonal Waze-ben"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                   className="text-[#00FFEF] group-hover:scale-110 transition-transform">
-                <path d="M20.54 6.63A10 10 0 002 13a2 2 0 002 2h.5a3.5 3.5 0 107 0h2a3.5 3.5 0 107 0h.5a2 2 0 002-2 9.94 9.94 0 00-.46-2.99l-1.5-3.38zM7 16a1.5 1.5 0 11.001-3.001A1.5 1.5 0 017 16zm9 0a1.5 1.5 0 11.001-3.001A1.5 1.5 0 0116 16z"
-                      fill="currentColor"/>
-              </svg>
-              <span className="text-sm font-medium text-white whitespace-nowrap">
-                Waze
-              </span>
+              <div className="flex flex-col items-center gap-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     className="text-[#00FFEF] group-hover:scale-110 transition-transform">
+                  <path d="M20.54 6.63A10 10 0 002 13a2 2 0 002 2h.5a3.5 3.5 0 107 0h2a3.5 3.5 0 107 0h.5a2 2 0 002-2 9.94 9.94 0 00-.46-2.99l-1.5-3.38zM7 16a1.5 1.5 0 11.001-3.001A1.5 1.5 0 017 16zm9 0a1.5 1.5 0 11.001-3.001A1.5 1.5 0 0116 16z"
+                        fill="currentColor"/>
+                </svg>
+                <span className="text-sm font-medium text-white whitespace-nowrap">
+                  Waze
+                </span>
+              </div>
             </a>
 
           </div>
