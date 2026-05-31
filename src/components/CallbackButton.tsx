@@ -5,19 +5,28 @@ export default function CallbackButton() {
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle');
+  const [error, setError] = useState('');
 
   const submit = async () => {
-    if (!phone) return;
+    if (!phone.trim()) return;
     setStatus('loading');
+    setError('');
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nev: 'Visszahívás kérés', telefon: phone, tema: 'Visszahívás', tipus: 'szakuzlet' }),
+        body: JSON.stringify({ phone: phone.trim() }),
       });
-    } catch { /* graceful skip */ }
-    setStatus('done');
-    setTimeout(() => { setOpen(false); setPhone(''); setStatus('idle'); }, 2500);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Hiba történt');
+      }
+      setStatus('done');
+      setTimeout(() => { setOpen(false); setPhone(''); setStatus('idle'); }, 2500);
+    } catch (e) {
+      setStatus('idle');
+      setError(e instanceof Error ? e.message : 'Hiba történt. Hívjon: +36 30 618 2165');
+    }
   };
 
   return (
@@ -39,6 +48,7 @@ export default function CallbackButton() {
               <button onClick={submit} disabled={status === 'loading'} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '10px 20px', fontSize: 14 }}>
                 {status === 'loading' ? 'Küldés...' : 'Visszahívást kérek'}
               </button>
+              {error && <p style={{ fontSize: 12, color: '#f87171', marginTop: 8, marginBottom: 0 }}>{error}</p>}
             </>
           )}
         </div>

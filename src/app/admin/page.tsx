@@ -26,7 +26,37 @@ interface AnalyticsData {
   surveyResults: { found?: string; missing?: string; timestamp: number }[];
 }
 
-type Tab = 'chatok' | 'analitika' | 'leadek' | 'kerdoiv' | 'vip';
+type Tab = 'chatok' | 'analitika' | 'leadek' | 'visszahivas' | 'kerdoiv' | 'vip';
+
+// ── Megosztott típusok / segédek a lead + visszahívás kezeléshez ────────────────
+interface Lead {
+  id: string; created_at: string; nev: string; telefon: string; email?: string | null;
+  tema?: string | null; uzenet?: string | null; statusz: string; source?: string | null;
+  contacted_at?: string | null; notes?: string | null;
+}
+interface Callback {
+  id: string; created_at: string; telefon: string; nev?: string | null;
+  preferred_time?: string | null; uzenet?: string | null; statusz: string;
+  called_at?: string | null; notes?: string | null;
+}
+
+function adminToken() { return localStorage.getItem('velencevill_admin_token') ?? ''; }
+
+const STATUS_LABEL: Record<string, string> = {
+  uj: 'Új', megkeresve: 'Megkeresve', hivva: 'Felhívva', kesz: 'Kész', lemondva: 'Lemondva',
+};
+function statusColor(s: string): React.CSSProperties {
+  switch (s) {
+    case 'uj': return { background: 'rgba(239,68,68,0.18)', color: '#f87171' };
+    case 'megkeresve':
+    case 'hivva': return { background: 'rgba(234,179,8,0.18)', color: '#facc15' };
+    case 'kesz': return { background: 'rgba(45,155,111,0.18)', color: '#34d399' };
+    default: return { background: 'rgba(136,153,170,0.18)', color: '#9ca3af' };
+  }
+}
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 // ── Login ──────────────────────────────────────────────────────────────────────
 function LoginForm({ onAuth }: { onAuth: () => void }) {
@@ -353,12 +383,201 @@ function KerdoivTab() {
 }
 
 // ── Leads tab ──────────────────────────────────────────────────────────────────
+const chipStyle = (active: boolean): React.CSSProperties => ({
+  padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none',
+  background: active ? '#00FFEF' : 'rgba(13,31,60,0.8)', color: active ? '#060d18' : '#8899aa', transition: 'all 0.2s',
+});
+const actBtn = (bg: string, fg: string): React.CSSProperties => ({
+  fontSize: 12, padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+  background: bg, color: fg, whiteSpace: 'nowrap',
+});
+
 function LeadsTab() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl || supabaseUrl === 'your_supabase_url') {
-    return <p style={{ fontSize: 14, color: '#8899aa' }}>Supabase nincs konfigurálva. Állítsa be a <code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_URL</code> és <code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> változókat.</p>;
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'uj' | 'megkeresve' | 'kesz' | 'all'>('uj');
+
+  const fetchLeads = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/leads', { headers: { Authorization: `Bearer ${adminToken()}` } });
+      if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Nem sikerült betölteni.'); return; }
+      const { leads } = await res.json();
+      setError(null);
+      setLeads(leads as Lead[]);
+    } catch {
+      setError('Hálózati hiba a leadek betöltésekor.');
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLeads();
+    const t = setInterval(fetchLeads, 15000);
+    return () => clearInterval(t);
+  }, [fetchLeads]);
+
+  async function updateStatus(id: string, statusz: string) {
+    await fetch('/api/admin/leads', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
+      body: JSON.stringify({ id, statusz }),
+    });
+    fetchLeads();
   }
-  return <p style={{ fontSize: 14, color: '#8899aa' }}>Leadek betöltése...</p>;
+  async function remove(id: string) {
+    if (!confirm('Biztosan törli ezt az ajánlatkérést?')) return;
+    await fetch(`/api/admin/leads?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken()}` } });
+    fetchLeads();
+  }
+
+  if (error) return <p style={{ color: '#f87171', fontSize: 14 }}>{error}</p>;
+  if (!loaded) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
+
+  const filtered = filter === 'all' ? leads : leads.filter(l => l.statusz === filter);
+  const newCount = leads.filter(l => l.statusz === 'uj').length;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: '#fff', margin: 0 }}>
+          Ajánlatkérések
+          {newCount > 0 && <span style={{ marginLeft: 8, fontSize: 11, background: '#EF4444', color: '#fff', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{newCount} új</span>}
+        </p>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {([['uj', 'Új'], ['megkeresve', 'Megkeresve'], ['kesz', 'Kész'], ['all', 'Összes']] as const).map(([v, label]) => (
+            <button key={v} onClick={() => setFilter(v)} style={chipStyle(filter === v)}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <p style={{ color: '#8899aa', fontSize: 14 }}>Nincs ajánlatkérés ebben a státuszban.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filtered.map(lead => (
+            <div key={lead.id} className="glass-card" style={{ padding: '14px 16px', borderColor: lead.statusz === 'uj' ? 'rgba(0,255,239,0.3)' : 'rgba(0,255,239,0.1)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{lead.nev}</span>
+                    <span style={{ fontSize: 11, padding: '1px 8px', borderRadius: 20, ...statusColor(lead.statusz) }}>{STATUS_LABEL[lead.statusz] ?? lead.statusz}</span>
+                    {lead.tema && <span style={{ fontSize: 11, padding: '1px 8px', borderRadius: 20, background: 'rgba(0,255,239,0.1)', color: '#00FFEF' }}>{lead.tema}</span>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 13, marginBottom: 6 }}>
+                    <a href={`tel:${lead.telefon}`} style={{ color: '#00FFEF', textDecoration: 'none' }}>📞 {lead.telefon}</a>
+                    {lead.email && <a href={`mailto:${lead.email}`} style={{ color: '#8899aa', textDecoration: 'none' }}>✉ {lead.email}</a>}
+                  </div>
+                  {lead.uzenet && <p style={{ fontSize: 13, color: '#8899aa', margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>{lead.uzenet}</p>}
+                  <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>{fmtDate(lead.created_at)}{lead.contacted_at && ` · megkeresve: ${fmtDate(lead.contacted_at)}`}</p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                  {lead.statusz === 'uj' && <button onClick={() => updateStatus(lead.id, 'megkeresve')} style={actBtn('rgba(234,179,8,0.18)', '#facc15')}>✓ Megkerestem</button>}
+                  {lead.statusz === 'megkeresve' && <button onClick={() => updateStatus(lead.id, 'kesz')} style={actBtn('rgba(45,155,111,0.18)', '#34d399')}>✓ Kész</button>}
+                  <button onClick={() => remove(lead.id)} style={actBtn('rgba(239,68,68,0.12)', '#f87171')}>Törlés</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Visszahívás tab ──────────────────────────────────────────────────────────
+function CallbacksTab() {
+  const [items, setItems] = useState<Callback[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'uj' | 'hivva' | 'kesz' | 'all'>('uj');
+
+  const fetchItems = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/callbacks', { headers: { Authorization: `Bearer ${adminToken()}` } });
+      if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
+      if (!res.ok) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Nem sikerült betölteni.'); return; }
+      const { callbacks } = await res.json();
+      setError(null);
+      setItems(callbacks as Callback[]);
+    } catch {
+      setError('Hálózati hiba a visszahívások betöltésekor.');
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchItems();
+    const t = setInterval(fetchItems, 15000);
+    return () => clearInterval(t);
+  }, [fetchItems]);
+
+  async function updateStatus(id: string, statusz: string) {
+    await fetch('/api/admin/callbacks', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
+      body: JSON.stringify({ id, statusz }),
+    });
+    fetchItems();
+  }
+  async function remove(id: string) {
+    if (!confirm('Biztosan törli ezt a visszahívás kérést?')) return;
+    await fetch(`/api/admin/callbacks?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken()}` } });
+    fetchItems();
+  }
+
+  if (error) return <p style={{ color: '#f87171', fontSize: 14 }}>{error}</p>;
+  if (!loaded) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
+
+  const filtered = filter === 'all' ? items : items.filter(c => c.statusz === filter);
+  const newCount = items.filter(c => c.statusz === 'uj').length;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: '#fff', margin: 0 }}>
+          Visszahívás kérések
+          {newCount > 0 && <span style={{ marginLeft: 8, fontSize: 11, background: '#EF4444', color: '#fff', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{newCount} új</span>}
+        </p>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {([['uj', 'Új'], ['hivva', 'Felhívva'], ['kesz', 'Kész'], ['all', 'Összes']] as const).map(([v, label]) => (
+            <button key={v} onClick={() => setFilter(v)} style={chipStyle(filter === v)}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <p style={{ color: '#8899aa', fontSize: 14 }}>Nincs visszahívás kérés ebben a státuszban.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filtered.map(cb => (
+            <div key={cb.id} className="glass-card" style={{ padding: '14px 16px', borderColor: cb.statusz === 'uj' ? 'rgba(0,255,239,0.3)' : 'rgba(0,255,239,0.1)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                    <a href={`tel:${cb.telefon}`} style={{ fontSize: 14, fontWeight: 600, color: '#00FFEF', textDecoration: 'none' }}>📞 {cb.telefon}</a>
+                    <span style={{ fontSize: 11, padding: '1px 8px', borderRadius: 20, ...statusColor(cb.statusz) }}>{STATUS_LABEL[cb.statusz] ?? cb.statusz}</span>
+                    {cb.preferred_time && <span style={{ fontSize: 11, padding: '1px 8px', borderRadius: 20, background: 'rgba(0,255,239,0.1)', color: '#00FFEF' }}>{cb.preferred_time}</span>}
+                  </div>
+                  {cb.nev && <p style={{ fontSize: 13, color: '#fff', margin: '0 0 4px' }}>{cb.nev}</p>}
+                  {cb.uzenet && <p style={{ fontSize: 13, color: '#8899aa', margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>{cb.uzenet}</p>}
+                  <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>{fmtDate(cb.created_at)}{cb.called_at && ` · felhívva: ${fmtDate(cb.called_at)}`}</p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                  {cb.statusz === 'uj' && <button onClick={() => updateStatus(cb.id, 'hivva')} style={actBtn('rgba(234,179,8,0.18)', '#facc15')}>✓ Felhívtam</button>}
+                  {cb.statusz === 'hivva' && <button onClick={() => updateStatus(cb.id, 'kesz')} style={actBtn('rgba(45,155,111,0.18)', '#34d399')}>✓ Kész</button>}
+                  <button onClick={() => remove(cb.id)} style={actBtn('rgba(239,68,68,0.12)', '#f87171')}>Törlés</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── VIP Offers tab ─────────────────────────────────────────────────────────────
@@ -588,6 +807,7 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [tab, setTab] = useState<Tab>('chatok');
   const [checked, setChecked] = useState(false);
+  const [counts, setCounts] = useState({ newLeads: 0, newCallbacks: 0 });
 
   useEffect(() => {
     const token = localStorage.getItem('velencevill_admin_token');
@@ -595,24 +815,48 @@ export default function AdminPage() {
     setChecked(true);
   }, []);
 
+  // Fejléc badge: új lead + visszahívás számláló (30 mp frissítés)
+  useEffect(() => {
+    if (!authed) return;
+    let stop = false;
+    async function fetchCounts() {
+      try {
+        const res = await fetch('/api/admin/counts', { headers: { Authorization: `Bearer ${adminToken()}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!stop) setCounts({ newLeads: data.newLeads ?? 0, newCallbacks: data.newCallbacks ?? 0 });
+      } catch { /* csendben */ }
+    }
+    fetchCounts();
+    const t = setInterval(fetchCounts, 30000);
+    return () => { stop = true; clearInterval(t); };
+  }, [authed]);
+
   if (!checked) return null;
   if (!authed) return <LoginForm onAuth={() => setAuthed(true)} />;
 
-  const TABS: { id: Tab; label: string }[] = [
-    { id: 'chatok',    label: '💬 Chatok' },
-    { id: 'analitika', label: '📊 Analitika' },
-    { id: 'leadek',    label: '📋 Leadek' },
-    { id: 'kerdoiv',   label: '📝 Kérdőív' },
-    { id: 'vip',       label: '⭐ VIP Ajánlatok' },
+  const totalNew = counts.newLeads + counts.newCallbacks;
+  const TABS: { id: Tab; label: string; badge?: number }[] = [
+    { id: 'chatok',      label: '💬 Chatok' },
+    { id: 'analitika',   label: '📊 Analitika' },
+    { id: 'leadek',      label: '📋 Leadek', badge: counts.newLeads },
+    { id: 'visszahivas', label: '📞 Visszahívás', badge: counts.newCallbacks },
+    { id: 'kerdoiv',     label: '📝 Kérdőív' },
+    { id: 'vip',         label: '⭐ VIP Ajánlatok' },
   ];
 
   return (
     <div style={{ background: '#060d18', minHeight: '100vh', padding: '2rem' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00FFEF" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Velence Vill Admin</span>
+            {totalNew > 0 && (
+              <span style={{ marginLeft: 4, fontSize: 12, background: '#EF4444', color: '#fff', fontWeight: 700, padding: '3px 10px', borderRadius: 20, animation: 'pulse-dot 2s infinite' }}>
+                🔔 {totalNew} új kérés
+              </span>
+            )}
           </div>
           <button onClick={() => { localStorage.removeItem('velencevill_admin_token'); setAuthed(false); }}
             style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: '#8899aa', fontSize: 13, padding: '6px 14px', borderRadius: 8, cursor: 'pointer' }}>
@@ -620,20 +864,22 @@ export default function AdminPage() {
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'rgba(13,31,60,0.5)', padding: 4, borderRadius: 10, width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 24, background: 'rgba(13,31,60,0.5)', padding: 4, borderRadius: 10, width: 'fit-content', flexWrap: 'wrap' }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              style={{ padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: tab === t.id ? 'rgba(0,255,239,0.1)' : 'transparent', color: tab === t.id ? '#00FFEF' : '#8899aa', border: tab === t.id ? '1px solid rgba(0,255,239,0.25)' : '1px solid transparent', transition: 'all 0.2s' }}>
+              style={{ position: 'relative', padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', background: tab === t.id ? 'rgba(0,255,239,0.1)' : 'transparent', color: tab === t.id ? '#00FFEF' : '#8899aa', border: tab === t.id ? '1px solid rgba(0,255,239,0.25)' : '1px solid transparent', transition: 'all 0.2s' }}>
               {t.label}
+              {t.badge ? <span style={{ marginLeft: 6, fontSize: 10, background: '#EF4444', color: '#fff', fontWeight: 700, padding: '1px 6px', borderRadius: 20 }}>{t.badge}</span> : null}
             </button>
           ))}
         </div>
 
-        {tab === 'chatok'    && <ChatTab />}
-        {tab === 'analitika' && <AnalyticsTab />}
-        {tab === 'leadek'    && <LeadsTab />}
-        {tab === 'kerdoiv'   && <KerdoivTab />}
-        {tab === 'vip'       && <VipOffersTab />}
+        {tab === 'chatok'      && <ChatTab />}
+        {tab === 'analitika'   && <AnalyticsTab />}
+        {tab === 'leadek'      && <LeadsTab />}
+        {tab === 'visszahivas' && <CallbacksTab />}
+        {tab === 'kerdoiv'     && <KerdoivTab />}
+        {tab === 'vip'         && <VipOffersTab />}
       </div>
     </div>
   );

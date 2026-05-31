@@ -47,12 +47,17 @@ export default function ContactForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setState('idle');
+        setToast({ message: data.error || 'Hiba történt. Hívjon közvetlenül: +36 30 618 2165', type: 'error' });
+        return;
+      }
       setState('success');
       trackEvent('form_success');
     } catch {
       setState('idle');
-      setToast({ message: 'Hiba történt. Kérjük, próbálja újra.', type: 'error' });
+      setToast({ message: 'Kapcsolódási hiba. Ellenőrizze az internetet, vagy hívjon: +36 30 618 2165', type: 'error' });
     }
   };
 

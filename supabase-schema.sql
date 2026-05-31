@@ -24,9 +24,33 @@ CREATE POLICY "Service role only" ON leads
 CREATE POLICY "Allow anon insert" ON leads
   FOR INSERT WITH CHECK (true);
 
+-- Lead workflow oszlopok (admin: státuszkezelés, jegyzet)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS source       TEXT DEFAULT 'contact_form';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS notes        TEXT;
+
 -- Index a státuszra (admin szűréshez)
 CREATE INDEX IF NOT EXISTS leads_statusz_idx ON leads (statusz);
 CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads (created_at DESC);
+
+-- ============================================================================
+-- CALLBACK_REQUESTS (visszahívás widget)
+--   anon csak INSERT; az admin olvasás/módosítás service_role-os API route-on.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS callback_requests (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at     TIMESTAMPTZ DEFAULT NOW(),
+  telefon        TEXT NOT NULL,
+  nev            TEXT,
+  preferred_time TEXT,
+  uzenet         TEXT,
+  statusz        TEXT DEFAULT 'uj',
+  called_at      TIMESTAMPTZ,
+  notes          TEXT
+);
+ALTER TABLE callback_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "callback_anon_insert" ON callback_requests FOR INSERT TO anon WITH CHECK (true);
+CREATE INDEX IF NOT EXISTS callback_created_idx ON callback_requests (created_at DESC);
 
 -- ============================================================================
 -- CHAT (valós idejű ügyfél-chat)
