@@ -1,6 +1,11 @@
 'use client';
 import { useReveal } from '@/hooks/useReveal';
 
+// ⚠️ ÜZLETI DÖNTÉS: a lenti vélemények kitalált nevekkel készültek (nem valódi
+// visszajelzések). Hitelességi okból alapból REJTVE. Kapcsold be CSAK valódi
+// (pl. Google Reviews) véleményekkel. Lásd a Loki jelentést.
+const SHOW_REVIEWS = false;
+
 const REVIEWS = [
   { nev: 'Kovács András',          csillag: 5, szoveg: 'Gyors kiszolgálás, minden megvolt amit kerestem. Legrand kapcsolókat vettem, nagyon elégedett vagyok.', datum: '2025. március' },
   { nev: 'Horváth Péter',          csillag: 5, szoveg: 'Szakértő segítség, pontos tanácsot adtak az elosztótábla cseréhez. Ajánlom mindenkinek!', datum: '2025. február' },
@@ -15,6 +20,8 @@ function initials(name: string) {
 
 export default function Reviews() {
   const ref = useReveal<HTMLElement>(true);
+
+  if (!SHOW_REVIEWS) return null;
 
   return (
     <section ref={ref} style={{ padding: '4rem 2rem', background: '#0d1f3c', borderTop: '0.5px solid rgba(0,255,239,0.08)' }}>

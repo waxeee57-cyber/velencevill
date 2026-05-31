@@ -20,18 +20,28 @@ export default function Footer() {
           </div>
           <div>
             <h4 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', marginBottom: 10 }}>Oldalak</h4>
-            {['Főoldal','Termékkörök','Márkák','Villanyszerelő','Ajánlatot kérek'].map(l => (
-              <a key={l} href="#" style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#475569', textDecoration: 'none' }}
+            {[
+              { label: 'Főoldal', href: '/' },
+              { label: 'Termékkörök', href: '/termekek' },
+              { label: 'Márkák', href: '/markak' },
+              { label: 'Villanyszerelő', href: '/szerelo' },
+              { label: 'Ajánlatot kérek', href: '/#ajanlat' },
+            ].map(l => (
+              <a key={l.label} href={l.href} style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#475569', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#94A3B8')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#475569')}>{l}</a>
+                onMouseLeave={e => (e.currentTarget.style.color = '#475569')}>{l.label}</a>
             ))}
           </div>
           <div>
             <h4 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', marginBottom: 10 }}>Jogi</h4>
-            {['Adatvédelmi tájékoztató','ÁSZF','Cookie beállítások'].map(l => (
-              <a key={l} href="#" style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#475569', textDecoration: 'none' }}
+            {[
+              { label: 'Adatvédelmi tájékoztató', href: '/adatvedelem' },
+              { label: 'ÁSZF', href: '/aszf' },
+              { label: 'Cookie tájékoztató', href: '/cookie-tajekoztato' },
+            ].map(l => (
+              <a key={l.label} href={l.href} style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#475569', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#94A3B8')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#475569')}>{l}</a>
+                onMouseLeave={e => (e.currentTarget.style.color = '#475569')}>{l.label}</a>
             ))}
           </div>
         </div>

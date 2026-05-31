@@ -15,10 +15,18 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: Props): Metadata {
   const article = ARTICLES.find(a => a.slug === params.slug);
-  if (!article) return {};
+  if (!article) return { title: 'Cikk nem található | Velence Vill Tudástár' };
   return {
-    title: article.title,
+    title: `${article.title} | Velence Vill Tudástár`,
     description: article.description,
+    robots: { index: true, follow: true },
+    alternates: { canonical: `/tudastar/${article.slug}` },
+    openGraph: {
+      title: article.title,
+      description: article.description,
+      type: 'article',
+      publishedTime: article.publishDate,
+    },
   };
 }
 
@@ -53,20 +61,32 @@ export default function ArticlePage({ params }: Props) {
             {article.title}
           </h1>
 
-          {/* Placeholder content */}
-          <div style={{ background: 'rgba(13,31,60,0.8)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, padding: '2.5rem', textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>📝</div>
-            <p style={{ fontSize: 16, color: '#8899aa', lineHeight: 1.7, marginBottom: 20 }}>
-              Ez a cikk hamarosan elkészül.<br />
-              Addig hívjon minket személyesen!
-            </p>
-            <a
-              href="tel:+36306182165"
-              className="btn-primary"
-              style={{ textDecoration: 'none', fontSize: 15 }}>
-              📞 +36 30 618 2165
-            </a>
-          </div>
+          {/* Cikk tartalom — ha van; különben felhívás-placeholder */}
+          {article.content.trim() ? (
+            <article style={{ marginBottom: 48 }}>
+              {article.content.trim().split(/\n\s*\n/).map((para, i) => (
+                <p key={i} style={{ fontSize: 16, color: '#c7d2da', lineHeight: 1.8, marginBottom: 18 }}>
+                  {para.trim()}
+                </p>
+              ))}
+            </article>
+          ) : (
+            <div style={{ background: 'rgba(13,31,60,0.8)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, padding: '2.5rem', textAlign: 'center', marginBottom: 48 }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00FFEF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 16 }} aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <p style={{ fontSize: 16, color: '#8899aa', lineHeight: 1.7, marginBottom: 20 }}>
+                Ez a cikk hamarosan elkészül.<br />
+                Addig hívjon minket személyesen!
+              </p>
+              <a
+                href="tel:+36306182165"
+                className="btn-primary"
+                style={{ textDecoration: 'none', fontSize: 15 }}>
+                Hívás: +36 30 618 2165
+              </a>
+            </div>
+          )}
 
           {/* Sidebar — related product categories */}
           <div style={{ background: 'rgba(13,31,60,0.5)', border: '1px solid rgba(0,255,239,0.1)', borderRadius: 12, padding: '1.5rem' }}>

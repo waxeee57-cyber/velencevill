@@ -84,7 +84,7 @@ export const ARTICLES: Article[] = [
     content: '',
   },
   {
-    slug: 'kulteri-vilagitas-ip-vedettség',
+    slug: 'kulteri-vilagitas-ip-vedettseg',
     title: 'Kültéri világítás: melyik IP védettségi fokozat kell?',
     description: 'IP20-tól IP68-ig: mikor melyik IP védettségi fokozatú lámpa szükséges? Terasz, bejárat, kert, medence mellé mit válasszunk?',
     category: 'diy',
@@ -93,7 +93,7 @@ export const ARTICLES: Article[] = [
     content: '',
   },
   {
-    slug: 'kabelmeretezés-alapok',
+    slug: 'kabelmeretezes-alapok',
     title: 'Kábelméretezés alapok: hogyan válaszd ki a megfelelő keresztmetszetet?',
     description: 'A kábel keresztmetszetének kiválasztása nem csak a terhelhetőségről szól — feszültségesés, rövid zárlati áram és szerelési mód is számít.',
     category: 'szakmai',
