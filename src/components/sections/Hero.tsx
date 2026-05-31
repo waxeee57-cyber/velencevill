@@ -242,7 +242,81 @@ export default function Hero() {
           <AnimatedStat target={10} suffix="+" label="Márka" />
         </div>
 
-        <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'0 auto 2rem' }} />
+        {/* Térkép + gyorsgombok szekció */}
+        <div className="mt-12 md:mt-16 max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 md:gap-5 items-center">
+
+            {/* Bal: Google Maps gomb */}
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=Velence+Vill+Kft+Fecske+utca+12+Velence"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-105"
+              aria-label="Útvonal Google Maps-ben"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   className="text-[#00FFEF] group-hover:scale-110 transition-transform">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"
+                      fill="currentColor"/>
+              </svg>
+              <span className="text-sm font-medium text-white whitespace-nowrap">
+                Google Maps
+              </span>
+            </a>
+
+            {/* Középen: Beágyazott mini térkép */}
+            <div className="relative rounded-xl overflow-hidden border border-[#00FFEF]/20 hover:border-[#00FFEF]/40 transition-colors group">
+              {/* Cím badge bal felső */}
+              <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-lg bg-[#060d18]/90 backdrop-blur-sm border border-[#00FFEF]/30 text-xs">
+                <span className="text-[#00FFEF]">📍</span>
+                <span className="text-white ml-1.5 font-medium">Fecske u. 12., Velence</span>
+              </div>
+
+              {/* iframe térkép */}
+              <iframe
+                src="https://www.google.com/maps?q=Velence+Vill+Kft+Fecske+utca+12+Velence&output=embed"
+                width="100%"
+                height="180"
+                style={{ border: 0, filter: 'invert(0.92) hue-rotate(180deg) saturate(0.4) brightness(0.95)' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Velence Vill Kft. helye"
+                className="w-full"
+              />
+
+              {/* Kattintási overlay (mobilon) */}
+              <a
+                href="https://maps.google.com/?q=Velence+Vill+Kft+Fecske+utca+12+Velence"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute inset-0 md:hidden"
+                aria-label="Térkép megnyitása"
+              />
+            </div>
+
+            {/* Jobb: Waze gomb */}
+            <a
+              href="https://waze.com/ul?q=Velence+Vill+Kft+Fecske+utca+12+Velence&navigate=yes"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-105"
+              aria-label="Útvonal Waze-ben"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                   className="text-[#00FFEF] group-hover:scale-110 transition-transform">
+                <path d="M20.54 6.63A10 10 0 002 13a2 2 0 002 2h.5a3.5 3.5 0 107 0h2a3.5 3.5 0 107 0h.5a2 2 0 002-2 9.94 9.94 0 00-.46-2.99l-1.5-3.38zM7 16a1.5 1.5 0 11.001-3.001A1.5 1.5 0 017 16zm9 0a1.5 1.5 0 11.001-3.001A1.5 1.5 0 0116 16z"
+                      fill="currentColor"/>
+              </svg>
+              <span className="text-sm font-medium text-white whitespace-nowrap">
+                Waze
+              </span>
+            </a>
+
+          </div>
+        </div>
+
+        <div style={{ width:40, height:0.5, background:'rgba(0,255,239,0.15)', margin:'2.5rem auto 2rem' }} />
 
         {/* Opening hours */}
         <div style={{ maxWidth:400, margin:'0 auto', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
