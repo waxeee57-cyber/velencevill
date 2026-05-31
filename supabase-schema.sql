@@ -87,8 +87,9 @@ ALTER PUBLICATION supabase_realtime ADD TABLE chat_messages;
 
 -- ============================================================================
 -- VIP AJÁNLATOK
---   FIGYELEM: az admin VIP felület az anon kulccsal ír (meglévő dizájn).
---   Biztonsági adósság: érdemes később service_role útvonalra terelni.
+--   anon CSAK az aktív ajánlatokat olvashatja (publikus /vip oldal).
+--   Írás (insert/update/delete) + fájlfeltöltés kizárólag service_role-on át,
+--   a token-védett /api/admin/vip-offers route-on (nincs anon spam).
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS vip_offers (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -100,5 +101,8 @@ CREATE TABLE IF NOT EXISTS vip_offers (
   active      BOOLEAN DEFAULT TRUE
 );
 ALTER TABLE vip_offers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "vip_anon_all" ON vip_offers FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "vip_anon_select_active" ON vip_offers FOR SELECT TO anon USING (active = true);
 CREATE INDEX IF NOT EXISTS vip_offers_active_idx ON vip_offers (active, created_at DESC);
+
+-- vip-files bucket: publikus olvasás; feltöltés CSAK service_role (anon nem).
+-- (A vip_files_anon_upload policy eltávolítva.)

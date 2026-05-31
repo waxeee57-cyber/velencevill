@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Toast from '@/components/ui/Toast';
 
 interface ChatMessage { id: string; sender: 'user' | 'admin'; content: string; created_at: string }
@@ -596,67 +595,51 @@ function VipOffersTab() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const sbRef = useRef<SupabaseClient | null>(null);
 
   const [form, setForm] = useState({ title: '', description: '', valid_until: '' });
 
-  const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const sbKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const configured = !!sbUrl && !!sbKey;
-
-  function getSb(): SupabaseClient | null {
-    if (sbRef.current) return sbRef.current;
-    if (!sbUrl || !sbKey) return null;
+  // Minden VIP művelet service_role-os, token-védett API route-on át megy
+  // (/api/admin/vip-offers) — az anon kulcs nem írhat a táblába/bucketbe.
+  const fetchOffers = useCallback(async () => {
     try {
-      sbRef.current = createClient(sbUrl, sbKey);
-      return sbRef.current;
+      const res = await fetch('/api/admin/vip-offers', { headers: { Authorization: `Bearer ${adminToken()}` } });
+      if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
+      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (!res.ok) { setError('Nem sikerült betölteni az ajánlatokat.'); return; }
+      const { offers } = await res.json();
+      setError(null);
+      setOffers(offers as VipOffer[]);
     } catch {
-      return null;
+      setError('Hálózati hiba az ajánlatok betöltésekor.');
+    } finally {
+      setLoading(false);
     }
-  }
+  }, []);
 
-  useEffect(() => { fetchOffers(); }, []);
-
-  async function fetchOffers() {
-    const sb = getSb();
-    if (!sb) { setLoading(false); return; }
-    setLoading(true);
-    const { data } = await sb
-      .from('vip_offers')
-      .select('*')
-      .order('created_at', { ascending: false });
-    setOffers((data as VipOffer[]) || []);
-    setLoading(false);
-  }
+  useEffect(() => { fetchOffers(); }, [fetchOffers]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim()) { setToast({ message: 'Cím kötelező', type: 'error' }); return; }
-    const sb = getSb();
-    if (!sb) { setToast({ message: 'Supabase nincs konfigurálva', type: 'error' }); return; }
     setSubmitting(true);
     try {
-      let file_url: string | null = null;
+      const fd = new FormData();
+      fd.append('title', form.title.trim());
+      fd.append('description', form.description.trim());
+      fd.append('valid_until', form.valid_until);
       const file = fileRef.current?.files?.[0];
-      if (file) {
-        const ext = file.name.split('.').pop();
-        const fileName = `vip-offers/${Date.now()}.${ext}`;
-        const { error: uploadError } = await sb.storage
-          .from('vip-files')
-          .upload(fileName, file, { cacheControl: '3600', upsert: false });
-        if (uploadError) throw uploadError;
-        const { data: urlData } = sb.storage.from('vip-files').getPublicUrl(fileName);
-        file_url = urlData.publicUrl;
-      }
-      const { error } = await sb.from('vip_offers').insert({
-        title: form.title.trim(),
-        description: form.description.trim() || null,
-        valid_until: form.valid_until || null,
-        file_url,
-        active: true,
+      if (file) fd.append('file', file);
+
+      const res = await fetch('/api/admin/vip-offers', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${adminToken()}` },
+        body: fd,
       });
-      if (error) throw error;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Feltöltés sikertelen');
+
       setToast({ message: 'Ajánlat sikeresen feltöltve!', type: 'success' });
       setForm({ title: '', description: '', valid_until: '' });
       if (fileRef.current) fileRef.current.value = '';
@@ -670,31 +653,21 @@ function VipOffersTab() {
   }
 
   async function toggleActive(id: string, current: boolean) {
-    const sb = getSb();
-    if (!sb) return;
-    await sb.from('vip_offers').update({ active: !current }).eq('id', id);
+    await fetch('/api/admin/vip-offers', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
+      body: JSON.stringify({ id, active: !current }),
+    });
     fetchOffers();
   }
 
   async function deleteOffer(id: string) {
-    const sb = getSb();
-    if (!sb) return;
-    await sb.from('vip_offers').delete().eq('id', id);
+    if (!confirm('Biztosan törli ezt az ajánlatot?')) return;
+    await fetch(`/api/admin/vip-offers?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken()}` } });
     fetchOffers();
   }
 
-  if (!configured) {
-    return (
-      <div style={{ padding: '1.5rem', borderRadius: 12, border: '1px solid rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.05)' }}>
-        <p style={{ fontSize: 16, fontWeight: 600, color: '#facc15', margin: '0 0 8px' }}>⚠️ Supabase nincs konfigurálva</p>
-        <p style={{ fontSize: 13, color: '#8899aa', margin: '0 0 10px' }}>Állítsd be a környezeti változókat Vercelen:</p>
-        <ul style={{ fontSize: 13, color: '#8899aa', margin: 0, paddingLeft: 18 }}>
-          <li><code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_URL</code></li>
-          <li><code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
-        </ul>
-      </div>
-    );
-  }
+  if (error) return <p style={{ color: '#f87171', fontSize: 14 }}>{error}</p>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
