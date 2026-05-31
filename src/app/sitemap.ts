@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/helyi`,           lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
   ];
 
-  const articlePages: MetadataRoute.Sitemap = ARTICLES.map(a => ({
+  const articlePages: MetadataRoute.Sitemap = ARTICLES.filter(a => !a.draft).map(a => ({
     url: `${SITE_URL}/tudastar/${a.slug}`,
     lastModified: new Date(a.publishDate),
     changeFrequency: 'monthly' as const,

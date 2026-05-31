@@ -19,7 +19,7 @@ export function generateMetadata({ params }: Props): Metadata {
   return {
     title: `${article.title} | Velence Vill Tudástár`,
     description: article.description,
-    robots: { index: true, follow: true },
+    robots: article.draft ? { index: false, follow: false } : { index: true, follow: true },
     alternates: { canonical: `/tudastar/${article.slug}` },
     openGraph: {
       title: article.title,
@@ -64,11 +64,21 @@ export default function ArticlePage({ params }: Props) {
           {/* Cikk tartalom — ha van; különben felhívás-placeholder */}
           {article.content.trim() ? (
             <article style={{ marginBottom: 48 }}>
-              {article.content.trim().split(/\n\s*\n/).map((para, i) => (
-                <p key={i} style={{ fontSize: 16, color: '#c7d2da', lineHeight: 1.8, marginBottom: 18 }}>
-                  {para.trim()}
-                </p>
-              ))}
+              {article.content.trim().split(/\n\s*\n/).map((block, i) => {
+                const text = block.trim();
+                if (text.startsWith('## ')) {
+                  return (
+                    <h2 key={i} style={{ fontSize: 20, fontWeight: 700, color: '#ffffff', margin: '28px 0 10px', lineHeight: 1.35 }}>
+                      {text.slice(3).trim()}
+                    </h2>
+                  );
+                }
+                return (
+                  <p key={i} style={{ fontSize: 16, color: '#c7d2da', lineHeight: 1.8, marginBottom: 18 }}>
+                    {text}
+                  </p>
+                );
+              })}
             </article>
           ) : (
             <div style={{ background: 'rgba(13,31,60,0.8)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, padding: '2.5rem', textAlign: 'center', marginBottom: 48 }}>

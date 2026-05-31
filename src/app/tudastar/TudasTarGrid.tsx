@@ -13,7 +13,9 @@ const FILTERS: { key: 'all' | Category; label: string }[] = [
 export default function TudasTarGrid() {
   const [active, setActive] = useState<'all' | Category>('all');
 
-  const filtered = active === 'all' ? ARTICLES : ARTICLES.filter(a => a.category === active);
+  // Csak publikált (nem draft) cikkek jelennek meg a listában.
+  const published = ARTICLES.filter(a => !a.draft);
+  const filtered = active === 'all' ? published : published.filter(a => a.category === active);
 
   return (
     <>
