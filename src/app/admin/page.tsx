@@ -1,10 +1,18 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Toast from '@/components/ui/Toast';
 
-interface ChatMessage { role: 'user' | 'admin'; text: string; timestamp: number }
-interface ChatSession { id: string; nev: string; telefon: string; messages: ChatMessage[]; createdAt: number; read: boolean }
+interface ChatMessage { id: string; sender: 'user' | 'admin'; content: string; created_at: string }
+interface ChatSession {
+  id: string;
+  nev: string | null;
+  telefon: string | null;
+  status: string;
+  created_at: string;
+  last_message_at: string;
+  chat_messages: ChatMessage[];
+}
 
 interface AnalyticsData {
   total: number;
@@ -70,69 +78,116 @@ function LoginForm({ onAuth }: { onAuth: () => void }) {
 // ── Chatok tab ─────────────────────────────────────────────────────────────────
 function ChatTab() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [active, setActive] = useState<ChatSession | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [reply, setReply] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  useEffect(() => {
-    const ids: string[] = JSON.parse(localStorage.getItem('velencevill_chat_sessions') ?? '[]');
-    const loaded = ids.map(id => {
-      try { return JSON.parse(localStorage.getItem(`velencevill_chat_${id}`) ?? '') as ChatSession; }
-      catch { return null; }
-    }).filter(Boolean) as ChatSession[];
-    setSessions(loaded.sort((a, b) => b.createdAt - a.createdAt));
+  const fetchThreads = useCallback(async () => {
+    const token = localStorage.getItem('velencevill_admin_token') ?? '';
+    try {
+      const res = await fetch('/api/chat/threads', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
+      if (res.status === 503) { const j = await res.json(); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (!res.ok) { setError('Nem sikerült betölteni a beszélgetéseket.'); return; }
+      const { threads } = await res.json();
+      setError(null);
+      setSessions(threads as ChatSession[]);
+    } catch {
+      setError('Hálózati hiba a beszélgetések betöltésekor.');
+    } finally {
+      setLoaded(true);
+    }
   }, []);
 
-  const sendReply = () => {
-    if (!reply.trim() || !active) return;
-    const msg: ChatMessage = { role: 'admin', text: reply.trim(), timestamp: Date.now() };
-    const updated = { ...active, messages: [...active.messages, msg], read: true };
-    localStorage.setItem(`velencevill_chat_${active.id}`, JSON.stringify(updated));
-    setActive(updated);
-    setSessions(prev => prev.map(s => s.id === updated.id ? updated : s));
-    setReply('');
+  // Kezdeti betöltés + polling (5 mp) az új user-üzenetekért / válaszokért
+  useEffect(() => {
+    fetchThreads();
+    const t = setInterval(fetchThreads, 5000);
+    return () => clearInterval(t);
+  }, [fetchThreads]);
+
+  const active = sessions.find(s => s.id === activeId) ?? null;
+
+  const sendReply = async () => {
+    const content = reply.trim();
+    if (!content || !active || sending) return;
+    setSending(true);
+    const token = localStorage.getItem('velencevill_admin_token') ?? '';
+    try {
+      const res = await fetch('/api/chat/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ chatId: active.id, content }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j.error ?? 'A válasz küldése nem sikerült.');
+        return;
+      }
+      const { message } = await res.json();
+      setReply('');
+      setError(null);
+      // Optimista frissítés + háttér-szinkron
+      setSessions(prev => prev.map(s => s.id === active.id
+        ? { ...s, chat_messages: [...s.chat_messages, message as ChatMessage], last_message_at: (message as ChatMessage).created_at }
+        : s));
+      fetchThreads();
+    } catch {
+      setError('Hálózati hiba a válasz küldésekor.');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const fmt = (ts: number) => new Date(ts).toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const fmt = (iso: string) => new Date(iso).toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  if (error) return <p style={{ color: '#f87171', fontSize: 14 }}>{error}</p>;
+  if (!loaded) return <p style={{ color: '#8899aa', fontSize: 14 }}>Beszélgetések betöltése...</p>;
   if (sessions.length === 0) return <p style={{ color: '#8899aa', fontSize: 14 }}>Még nincs chat üzenet.</p>;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: active ? '280px 1fr' : '1fr', gap: 16 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {sessions.map(s => (
-          <div key={s.id} onClick={() => setActive(s)} className="glass-card"
-            style={{ padding: '12px 14px', cursor: 'pointer', borderColor: active?.id === s.id ? 'rgba(0,255,239,0.5)' : 'rgba(0,255,239,0.15)', transition: 'border-color 0.2s' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{s.nev}</span>
-              {!s.read && <span style={{ fontSize: 10, background: '#00FFEF', color: '#000', fontWeight: 700, padding: '1px 6px', borderRadius: 20 }}>ÚJ</span>}
+        {sessions.map(s => {
+          const last = s.chat_messages.at(-1);
+          const needsReply = last?.sender === 'user';
+          return (
+            <div key={s.id} onClick={() => setActiveId(s.id)} className="glass-card"
+              style={{ padding: '12px 14px', cursor: 'pointer', borderColor: activeId === s.id ? 'rgba(0,255,239,0.5)' : 'rgba(0,255,239,0.15)', transition: 'border-color 0.2s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{s.nev ?? 'Névtelen'}</span>
+                {needsReply && <span style={{ fontSize: 10, background: '#00FFEF', color: '#000', fontWeight: 700, padding: '1px 6px', borderRadius: 20 }}>ÚJ</span>}
+              </div>
+              <div style={{ fontSize: 12, color: '#8899aa' }}>{s.telefon ?? '—'}</div>
+              <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{last ? `${last.content.slice(0, 50)}${last.content.length > 50 ? '…' : ''}` : 'Nincs üzenet'}</div>
             </div>
-            <div style={{ fontSize: 12, color: '#8899aa' }}>{s.telefon}</div>
-            <div style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{s.messages.at(-1)?.text.slice(0, 50)}...</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {active && (
         <div className="glass-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 400 }}>
           <div style={{ borderBottom: '0.5px solid rgba(0,255,239,0.1)', paddingBottom: 10 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0 }}>{active.nev} · <span style={{ color: '#00FFEF' }}>{active.telefon}</span></p>
-            <p style={{ fontSize: 11, color: '#8899aa', margin: 0 }}>{fmt(active.createdAt)}</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#fff', margin: 0 }}>{active.nev ?? 'Névtelen'} · <span style={{ color: '#00FFEF' }}>{active.telefon ?? '—'}</span></p>
+            <p style={{ fontSize: 11, color: '#8899aa', margin: 0 }}>{fmt(active.created_at)}</p>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 300 }}>
-            {active.messages.map((m, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-start' : 'flex-end' }}>
-                <div style={{ maxWidth: '80%', padding: '7px 12px', borderRadius: 10, background: m.role === 'user' ? 'rgba(13,31,60,0.9)' : 'rgba(0,255,239,0.12)', fontSize: 13, color: '#fff' }}>
-                  {m.text}
+            {active.chat_messages.map((m) => (
+              <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: m.sender === 'user' ? 'flex-start' : 'flex-end' }}>
+                <div style={{ maxWidth: '80%', padding: '7px 12px', borderRadius: 10, background: m.sender === 'user' ? 'rgba(13,31,60,0.9)' : 'rgba(0,255,239,0.12)', fontSize: 13, color: '#fff' }}>
+                  {m.content}
                 </div>
-                <span style={{ fontSize: 10, color: '#8899aa', marginTop: 2 }}>{fmt(m.timestamp)}</span>
+                <span style={{ fontSize: 10, color: '#8899aa', marginTop: 2 }}>{fmt(m.created_at)}</span>
               </div>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input value={reply} onChange={e => setReply(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendReply()}
-              placeholder="Válasz..."
+              placeholder="Válasz..." disabled={sending}
               style={{ flex: 1, background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '9px 12px', color: '#fff', fontSize: 13, outline: 'none' }} />
-            <button onClick={sendReply} className="btn-primary" style={{ padding: '9px 16px', fontSize: 13 }}>Küld</button>
+            <button onClick={sendReply} disabled={sending} className="btn-primary" style={{ padding: '9px 16px', fontSize: 13, opacity: sending ? 0.6 : 1 }}>Küld</button>
           </div>
         </div>
       )}

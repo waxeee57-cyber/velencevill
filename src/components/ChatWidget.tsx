@@ -1,39 +1,30 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { trackEvent } from '@/utils/analytics';
 
-interface ChatMessage {
-  role: 'user' | 'admin';
-  text: string;
-  timestamp: number;
-}
-
-interface ChatSession {
+interface Message {
   id: string;
-  nev: string;
-  telefon: string;
-  messages: ChatMessage[];
-  createdAt: number;
-  read: boolean;
+  chat_id: string;
+  sender: 'user' | 'admin';
+  content: string;
+  created_at: string;
 }
 
 type Step = 'closed' | 'choice' | 'form' | 'chat';
 
-function genId() { return `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
+const GREETING =
+  'Köszönjük! Üzenetét megkaptuk, hamarosan visszajelzünk. Nyitvatartás: H-P 8-16h, Szo 8-12h';
 
-function saveSession(session: ChatSession) {
-  localStorage.setItem(`velencevill_chat_${session.id}`, JSON.stringify(session));
-  const ids: string[] = JSON.parse(localStorage.getItem('velencevill_chat_sessions') ?? '[]');
-  if (!ids.includes(session.id)) {
-    ids.push(session.id);
-    localStorage.setItem('velencevill_chat_sessions', JSON.stringify(ids));
-  }
-}
+const LS_ID = 'velencevill_chat_id';
+const LS_NEV = 'velencevill_chat_nev';
+const LS_TEL = 'velencevill_chat_telefon';
 
 export default function ChatWidget() {
   const [step, setStep] = useState<Step>('closed');
-  const [opened, setOpened] = useState(false);
-  const [session, setSession] = useState<ChatSession | null>(null);
+  const [session, setSession] = useState<{ id: string; nev: string; telefon: string } | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [form, setForm] = useState({ nev: '', telefon: '' });
   const [input, setInput] = useState('');
   const [pulse, setPulse] = useState(true);
@@ -43,52 +34,122 @@ export default function ChatWidget() {
     if (messagesRef.current) {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
-  }, [session?.messages]);
+  }, [messages, step]);
+
+  const loadMessages = useCallback(async (chatId: string) => {
+    const sb = getSupabaseBrowser();
+    if (!sb) return;
+    const { data } = await sb
+      .from('chat_messages')
+      .select('id, chat_id, sender, content, created_at')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: true });
+    if (data) setMessages(data as Message[]);
+  }, []);
+
+  // Visszatérő látogató: korábbi chat betöltése localStorage-ból
+  useEffect(() => {
+    const id = localStorage.getItem(LS_ID);
+    const nev = localStorage.getItem(LS_NEV);
+    const telefon = localStorage.getItem(LS_TEL);
+    if (id && nev && telefon) {
+      setSession({ id, nev, telefon });
+      loadMessages(id);
+    }
+  }, [loadMessages]);
+
+  // ── Realtime feliratkozás az admin (és saját) üzenetekre ──────────────────
+  useEffect(() => {
+    if (!session?.id) return;
+    const sb = getSupabaseBrowser();
+    if (!sb) return;
+
+    const channel: RealtimeChannel = sb
+      .channel(`chat_messages:${session.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `chat_id=eq.${session.id}`,
+        },
+        (payload) => {
+          const m = payload.new as Message;
+          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(channel);
+    };
+  }, [session?.id]);
 
   const openWidget = () => {
     setPulse(false);
-    setOpened(true);
-    setStep('choice');
+    setStep(session ? 'chat' : 'choice');
     trackEvent('chat_open');
   };
 
-  const startChat = () => {
+  const startChat = async () => {
     if (!form.nev || !form.telefon) return;
-    const newSession: ChatSession = {
-      id: genId(),
-      nev: form.nev,
-      telefon: form.telefon,
-      messages: [{ role: 'admin', text: 'Köszönjük! Üzenetét megkaptuk, hamarosan visszajelzünk. Nyitvatartás: H-P 8-16h, Szo 8-12h', timestamp: Date.now() }],
-      createdAt: Date.now(),
-      read: false,
-    };
-    saveSession(newSession);
-    setSession(newSession);
+    const sb = getSupabaseBrowser();
+    const id =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    if (sb) {
+      // A kliens generálja az id-t, így nincs szükség RETURNING-re (chats nem anon-olvasható).
+      await sb.from('chats').insert({ id, nev: form.nev, telefon: form.telefon, status: 'open' });
+    }
+
+    localStorage.setItem(LS_ID, id);
+    localStorage.setItem(LS_NEV, form.nev);
+    localStorage.setItem(LS_TEL, form.telefon);
+    setSession({ id, nev: form.nev, telefon: form.telefon });
+    setMessages([]);
     setStep('chat');
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || !session) return;
-    const msg: ChatMessage = { role: 'user', text: input.trim(), timestamp: Date.now() };
-    const updated: ChatSession = { ...session, messages: [...session.messages, msg] };
-    saveSession(updated);
-    setSession(updated);
+    const text = input.trim();
+    if (!text || !session) return;
     setInput('');
     trackEvent('chat_message');
 
+    const sb = getSupabaseBrowser();
+    if (sb) {
+      const { data } = await sb
+        .from('chat_messages')
+        .insert({ chat_id: session.id, sender: 'user', content: text })
+        .select()
+        .single();
+      if (data) {
+        const m = data as Message;
+        setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+      }
+      // last_message_at frissítés (best-effort; anon update tiltott -> elnyeljük)
+      sb.from('chats').update({ last_message_at: new Date().toISOString() }).eq('id', session.id).then(() => {});
+    }
+
+    // Email értesítés a csapatnak (változatlan)
     try {
       await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nev: session.nev, telefon: session.telefon, message: msg.text, sessionId: session.id }),
+        body: JSON.stringify({ nev: session.nev, telefon: session.telefon, message: text, sessionId: session.id }),
       });
-    } catch { /* graceful skip */ }
+    } catch {
+      /* graceful skip */
+    }
   };
 
-  const close = () => { setStep('closed'); };
+  const close = () => setStep('closed');
 
-  const formatTime = (ts: number) =>
-    new Date(ts).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <>
@@ -171,12 +232,18 @@ export default function ChatWidget() {
             {step === 'chat' && session && (
               <div>
                 <div ref={messagesRef} style={{ maxHeight: 220, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-                  {session.messages.map((msg, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                      <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: msg.role === 'user' ? 'rgba(0,255,239,0.15)' : 'rgba(13,31,60,0.9)', border: `1px solid ${msg.role === 'user' ? 'rgba(0,255,239,0.3)' : 'rgba(0,255,239,0.1)'}`, fontSize: 13, color: '#fff', lineHeight: 1.5 }}>
-                        {msg.text}
+                  {/* Üdvözlő üzenet (statikus, nem DB-ből) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: '12px 12px 12px 2px', background: 'rgba(13,31,60,0.9)', border: '1px solid rgba(0,255,239,0.1)', fontSize: 13, color: '#fff', lineHeight: 1.5 }}>
+                      {GREETING}
+                    </div>
+                  </div>
+                  {messages.map((msg) => (
+                    <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
+                      <div style={{ maxWidth: '80%', padding: '8px 12px', borderRadius: msg.sender === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: msg.sender === 'user' ? 'rgba(0,255,239,0.15)' : 'rgba(13,31,60,0.9)', border: `1px solid ${msg.sender === 'user' ? 'rgba(0,255,239,0.3)' : 'rgba(0,255,239,0.1)'}`, fontSize: 13, color: '#fff', lineHeight: 1.5 }}>
+                        {msg.content}
                       </div>
-                      <span style={{ fontSize: 10, color: '#8899aa', marginTop: 2 }}>{formatTime(msg.timestamp)}</span>
+                      <span style={{ fontSize: 10, color: '#8899aa', marginTop: 2 }}>{formatTime(msg.created_at)}</span>
                     </div>
                   ))}
                 </div>

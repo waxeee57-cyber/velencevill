@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 const SCHEDULE = [
   { day: 'Hétfő',     from: 8, to: 16 },
@@ -33,42 +33,6 @@ const DISPLAY_HOURS = [
   { label: 'Szo', time: '8:00–12:00', range: [5, 5] as [number, number] },
   { label: 'Vas', time: 'Zárva',      range: [6, 6] as [number, number] },
 ];
-
-function AnimatedStat({ target, suffix = '', label }: { target: number; suffix?: string; label: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !started.current) {
-        started.current = true;
-        const duration = 1500;
-        const steps = 60;
-        const increment = target / steps;
-        let current = 0;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            setCount(target);
-            clearInterval(timer);
-          } else {
-            setCount(Math.floor(current));
-          }
-        }, duration / steps);
-      }
-    }, { threshold: 0.1 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return (
-    <div ref={ref} style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: 26, fontWeight: 700, color: '#F1F5F9' }}>{count}{suffix}</div>
-      <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#8899aa', marginTop: 2 }}>{label}</div>
-    </div>
-  );
-}
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -238,8 +202,12 @@ export default function Hero() {
           </button>
         </div>
 
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'1.5rem', marginBottom:'2rem' }}>
-          <AnimatedStat target={10} suffix="+" label="Márka" />
+        {/* Kis statisztika badge — egy soros */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs md:text-sm">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0d1f3c]/40 border border-[#00FFEF]/15">
+            <span className="text-[#00FFEF] font-semibold">10+</span>
+            <span className="text-gray-400">vezető márka</span>
+          </div>
         </div>
 
         {/* Térkép + gyorsgombok szekció */}
