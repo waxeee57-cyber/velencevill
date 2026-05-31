@@ -1,5 +1,4 @@
 'use client';
-import { useEffect, useRef } from 'react';
 
 const SCHEDULE = [
   { day: 'Hétfő',     from: 8, to: 16 },
@@ -35,127 +34,12 @@ const DISPLAY_HOURS = [
 ];
 
 export default function Hero() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { isOpen, todayIdx, statusText } = getStatus();
-
-  useEffect(() => {
-    const c = canvasRef.current;
-    if (!c) return;
-    let animId: number;
-    let onResize: (() => void) | undefined;
-
-    import('three').then((THREE) => {
-      // Nagyobb, reszponzív villám: max 420px, mobilon a viewport 65%-a.
-      const W = Math.min(420, Math.round(window.innerWidth * 0.65));
-      const H = Math.round(W * 1.083);
-      c.width = W * window.devicePixelRatio;
-      c.height = H * window.devicePixelRatio;
-      c.style.width = `${W}px`;
-      c.style.height = `${H}px`;
-
-      const renderer = new THREE.WebGLRenderer({ canvas: c, alpha: true, antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(W, H);
-      renderer.setClearColor(0x000000, 0);
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
-      camera.position.set(0, 0, 7.5);
-
-      scene.add(new THREE.AmbientLight(0x000000, 1));
-      const pl1 = new THREE.PointLight(0x00FFEF, 4, 20);
-      pl1.position.set(3, 3, 3);
-      scene.add(pl1);
-      scene.add(new THREE.PointLight(0x000000, 2, 18));
-
-      const s = new THREE.Shape();
-      s.moveTo(0.14, 2.0); s.lineTo(-0.22, 0.06); s.lineTo(0.0, 0.06);
-      s.lineTo(-0.14, -2.0); s.lineTo(0.22, -0.05); s.lineTo(0.0, -0.05);
-      s.closePath();
-
-      const geo = new THREE.ExtrudeGeometry(s, { depth: 0.14, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.05, bevelSegments: 4 });
-      geo.center();
-
-      const bolt = new THREE.LineSegments(
-        new THREE.EdgesGeometry(geo, 10),
-        new THREE.LineBasicMaterial({ color: 0x00FFEF, transparent: true, opacity: 0.9 })
-      );
-      scene.add(bolt);
-      bolt.add(new THREE.LineSegments(
-        new THREE.EdgesGeometry(geo, 40),
-        new THREE.LineBasicMaterial({ color: 0x00FFEF, transparent: true, opacity: 0.22 })
-      ));
-
-      const spawnPoints = [
-        new THREE.Vector3(0, 2, 0), new THREE.Vector3(-0.2, 0.06, 0),
-        new THREE.Vector3(0, 0.06, 0), new THREE.Vector3(0, -2, 0),
-        new THREE.Vector3(0.2, -0.05, 0), new THREE.Vector3(0.1, 1, 0.07),
-        new THREE.Vector3(-0.1, -1, 0.07),
-      ];
-
-      const sparks = Array.from({ length: 28 }, () => {
-        const mat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.5 ? 0x00FFEF : 0xffffff, transparent: true, opacity: 0 });
-        const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.025 + Math.random() * 0.02, 4, 4), mat);
-        const pos = spawnPoints[Math.floor(Math.random() * spawnPoints.length)].clone();
-        mesh.position.copy(pos);
-        scene.add(mesh);
-        return { mesh, mat, pos: pos.clone(), vel: new THREE.Vector3((Math.random()-0.5)*0.06,(Math.random()-0.5)*0.06,(Math.random()-0.5)*0.06), life: Math.random(), maxLife: 0.5+Math.random()*0.8, delay: Math.random()*2 };
-      });
-
-      let t = 0;
-      const animate = () => {
-        animId = requestAnimationFrame(animate);
-        t += 0.012;
-        bolt.rotation.y = t * 0.55;
-        bolt.rotation.x = Math.sin(t * 0.28) * 0.14;
-        pl1.position.x = Math.sin(t * 0.45) * 3.5;
-        pl1.position.y = Math.cos(t * 0.38) * 2.5;
-        sparks.forEach(sp => {
-          sp.life += 0.018;
-          if (sp.life > sp.maxLife + sp.delay) {
-            sp.life = 0; sp.delay = Math.random()*1.5; sp.maxLife = 0.4+Math.random()*0.7;
-            const np = spawnPoints[Math.floor(Math.random()*spawnPoints.length)].clone();
-            sp.pos.copy(np); sp.mesh.position.copy(np);
-            sp.vel.set((Math.random()-0.5)*0.07,(Math.random()-0.5)*0.07,(Math.random()-0.5)*0.07);
-          }
-          const active = sp.life - sp.delay;
-          if (active > 0) {
-            sp.mesh.position.set(sp.pos.x+sp.vel.x*active*18, sp.pos.y+sp.vel.y*active*18, sp.pos.z+sp.vel.z*active*18);
-            const progress = active / sp.maxLife;
-            sp.mat.opacity = progress < 0.2 ? (progress/0.2)*0.9 : (1-progress)*0.9;
-            sp.mesh.scale.setScalar(1-progress*0.5);
-          } else { sp.mat.opacity = 0; }
-        });
-        renderer.render(scene, camera);
-      };
-      animate();
-
-      // Reszponzív átméretezés (desktop↔mobil rotate / ablakméret változás)
-      onResize = () => {
-        const w = Math.min(420, Math.round(window.innerWidth * 0.65));
-        const h = Math.round(w * 1.083);
-        c.width = w * window.devicePixelRatio;
-        c.height = h * window.devicePixelRatio;
-        c.style.width = `${w}px`;
-        c.style.height = `${h}px`;
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-      };
-      window.addEventListener('resize', onResize);
-    });
-    return () => {
-      cancelAnimationFrame(animId);
-      if (onResize) window.removeEventListener('resize', onResize);
-    };
-  }, []);
 
   return (
     <section style={{ background:'#060d18', minHeight:560, position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'4rem 2rem 3rem', textAlign:'center' }}>
       <div style={{ position:'absolute', top:-100, right:-80, width:360, height:360, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,255,239,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-80, left:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(0,0,0,0.4) 0%, transparent 70%)', pointerEvents:'none' }} />
-      <canvas ref={canvasRef} aria-hidden="true" className="hero-canvas" style={{}} />
 
       <div style={{ position:'relative', zIndex:2, maxWidth:560, width:'100%' }}>
         <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(0,255,239,0.07)', border:'0.5px solid rgba(0,255,239,0.25)', color:'#00FFEF', fontSize:12, fontWeight:500, padding:'5px 14px', borderRadius:20, marginBottom:'1.6rem', letterSpacing:'0.03em' }}>

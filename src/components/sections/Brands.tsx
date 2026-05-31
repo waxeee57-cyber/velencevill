@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import { useReveal } from '@/hooks/useReveal'
 
 const brands = [
@@ -19,40 +18,21 @@ const brands = [
 ]
 
 function BrandCard({ brand }: { brand: typeof brands[0] }) {
-  const [logoSrc, setLogoSrc] = useState(`/brands/${brand.slug}.svg`)
-  const [logoError, setLogoError] = useState(false)
-
-  const handleError = () => {
-    if (logoSrc.endsWith('.svg')) {
-      setLogoSrc(`/brands/${brand.slug}.png`)
-    } else {
-      setLogoError(true)
-    }
-  }
-
+  // Egységes szöveges márkacsempe. (A korábbi /brands/*.svg wordmarkok fix
+  // viewBox-a levágta a hosszú neveket, ráadásul a brightness-0 invert szűrő
+  // úgyis fehérre mosta őket — így a HTML-szöveg tisztább és nem csonkul.
+  // Hivatalos logók beszerzése után itt cserélhető vissza <img>-re.)
   return (
     <a
       href={brand.url}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`${brand.name} – ${brand.category}`}
-      className="reveal group glass-card p-6 flex flex-col items-center justify-center min-h-[160px] gap-3 transition-transform hover:scale-105"
+      className="reveal group glass-card p-6 flex flex-col items-center justify-center text-center min-h-[150px] gap-3 transition-transform hover:scale-105"
     >
-      {!logoError ? (
-        <div className="h-12 flex items-center justify-center w-full">
-          <img
-            src={logoSrc}
-            alt={`${brand.name} logo`}
-            onError={handleError}
-            className="h-full w-auto max-w-full object-contain brightness-0 invert opacity-70 group-hover:opacity-100 transition-opacity"
-            loading="lazy"
-          />
-        </div>
-      ) : (
-        <span className="text-sm sm:text-base md:text-lg font-bold text-white text-center leading-tight break-words px-2">
-          {brand.name}
-        </span>
-      )}
+      <h3 className="text-base sm:text-lg md:text-xl font-bold text-white leading-tight break-words px-1 group-hover:text-[#00FFEF] transition-colors">
+        {brand.name}
+      </h3>
       <span className="inline-block px-3 py-1 text-xs font-semibold bg-[#00FFEF]/10 text-[#00FFEF] rounded-full border border-[#00FFEF]/30 whitespace-nowrap">
         {brand.category.toUpperCase()}
       </span>
