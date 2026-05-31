@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 }
 
+// Mindig szerver-oldalon, kérésenként renderelődik — így az új VIP ajánlatok
+// újradeploy nélkül megjelennek, és a build sosem fut createClient-be.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 function isValidHttpUrl(value?: string) {
   if (!value) return false
   try {

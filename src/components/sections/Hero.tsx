@@ -42,6 +42,7 @@ export default function Hero() {
     const c = canvasRef.current;
     if (!c) return;
     let animId: number;
+    let onResize: (() => void) | undefined;
 
     import('three').then((THREE) => {
       // Nagyobb, reszponzív villám: max 420px, mobilon a viewport 65%-a.
@@ -128,8 +129,26 @@ export default function Hero() {
         renderer.render(scene, camera);
       };
       animate();
+
+      // Reszponzív átméretezés (desktop↔mobil rotate / ablakméret változás)
+      onResize = () => {
+        const w = Math.min(420, Math.round(window.innerWidth * 0.65));
+        const h = Math.round(w * 1.083);
+        c.width = w * window.devicePixelRatio;
+        c.height = h * window.devicePixelRatio;
+        c.style.width = `${w}px`;
+        c.style.height = `${h}px`;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      };
+      window.addEventListener('resize', onResize);
     });
-    return () => cancelAnimationFrame(animId);
+    return () => {
+      cancelAnimationFrame(animId);
+      if (onResize) window.removeEventListener('resize', onResize);
+    };
   }, []);
 
   return (
@@ -181,16 +200,8 @@ export default function Hero() {
           </button>
         </div>
 
-        {/* Kis statisztika badge — egy soros */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs md:text-sm">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0d1f3c]/40 border border-[#00FFEF]/15">
-            <span className="text-[#00FFEF] font-semibold">10+</span>
-            <span className="text-gray-400">vezető márka</span>
-          </div>
-        </div>
-
         {/* Térkép + gyorsgombok szekció */}
-        <div className="mt-12 md:mt-16 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="mt-8 md:mt-10 max-w-5xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 md:gap-4 items-stretch">
 
             {/* Bal: Google Maps gomb */}

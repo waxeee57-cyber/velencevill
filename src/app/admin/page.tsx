@@ -601,21 +601,28 @@ function VipOffersTab() {
 
   const [form, setForm] = useState({ title: '', description: '', valid_until: '' });
 
-  function getSb(): SupabaseClient {
-    if (!sbRef.current) {
-      sbRef.current = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+  const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const sbKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const configured = !!sbUrl && !!sbKey;
+
+  function getSb(): SupabaseClient | null {
+    if (sbRef.current) return sbRef.current;
+    if (!sbUrl || !sbKey) return null;
+    try {
+      sbRef.current = createClient(sbUrl, sbKey);
+      return sbRef.current;
+    } catch {
+      return null;
     }
-    return sbRef.current;
   }
 
   useEffect(() => { fetchOffers(); }, []);
 
   async function fetchOffers() {
+    const sb = getSb();
+    if (!sb) { setLoading(false); return; }
     setLoading(true);
-    const { data } = await getSb()
+    const { data } = await sb
       .from('vip_offers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -626,6 +633,8 @@ function VipOffersTab() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim()) { setToast({ message: 'Cím kötelező', type: 'error' }); return; }
+    const sb = getSb();
+    if (!sb) { setToast({ message: 'Supabase nincs konfigurálva', type: 'error' }); return; }
     setSubmitting(true);
     try {
       let file_url: string | null = null;
@@ -633,14 +642,14 @@ function VipOffersTab() {
       if (file) {
         const ext = file.name.split('.').pop();
         const fileName = `vip-offers/${Date.now()}.${ext}`;
-        const { error: uploadError } = await getSb().storage
+        const { error: uploadError } = await sb.storage
           .from('vip-files')
           .upload(fileName, file, { cacheControl: '3600', upsert: false });
         if (uploadError) throw uploadError;
-        const { data: urlData } = getSb().storage.from('vip-files').getPublicUrl(fileName);
+        const { data: urlData } = sb.storage.from('vip-files').getPublicUrl(fileName);
         file_url = urlData.publicUrl;
       }
-      const { error } = await getSb().from('vip_offers').insert({
+      const { error } = await sb.from('vip_offers').insert({
         title: form.title.trim(),
         description: form.description.trim() || null,
         valid_until: form.valid_until || null,
@@ -661,13 +670,30 @@ function VipOffersTab() {
   }
 
   async function toggleActive(id: string, current: boolean) {
-    await getSb().from('vip_offers').update({ active: !current }).eq('id', id);
+    const sb = getSb();
+    if (!sb) return;
+    await sb.from('vip_offers').update({ active: !current }).eq('id', id);
     fetchOffers();
   }
 
   async function deleteOffer(id: string) {
-    await getSb().from('vip_offers').delete().eq('id', id);
+    const sb = getSb();
+    if (!sb) return;
+    await sb.from('vip_offers').delete().eq('id', id);
     fetchOffers();
+  }
+
+  if (!configured) {
+    return (
+      <div style={{ padding: '1.5rem', borderRadius: 12, border: '1px solid rgba(234,179,8,0.3)', background: 'rgba(234,179,8,0.05)' }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: '#facc15', margin: '0 0 8px' }}>⚠️ Supabase nincs konfigurálva</p>
+        <p style={{ fontSize: 13, color: '#8899aa', margin: '0 0 10px' }}>Állítsd be a környezeti változókat Vercelen:</p>
+        <ul style={{ fontSize: 13, color: '#8899aa', margin: 0, paddingLeft: 18 }}>
+          <li><code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_URL</code></li>
+          <li><code style={{ color: '#00FFEF' }}>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
+        </ul>
+      </div>
+    );
   }
 
   return (
