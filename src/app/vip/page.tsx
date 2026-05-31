@@ -7,20 +7,35 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
 }
 
+function isValidHttpUrl(value?: string) {
+  if (!value) return false
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 async function getVipOffers() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Csak valódi, http(s) URL esetén próbálunk csatlakozni — különben a
+  // createClient hibát dobna (pl. placeholder vagy hiányzó env változó).
+  if (!isValidHttpUrl(supabaseUrl) || !supabaseKey) {
     return []
   }
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
-  const { data } = await supabase
-    .from('vip_offers')
-    .select('*')
-    .eq('active', true)
-    .order('created_at', { ascending: false })
-  return data || []
+  try {
+    const supabase = createClient(supabaseUrl!, supabaseKey)
+    const { data } = await supabase
+      .from('vip_offers')
+      .select('*')
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+    return data || []
+  } catch {
+    return []
+  }
 }
 
 // Inline SVG icon helpers
