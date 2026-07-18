@@ -77,8 +77,10 @@ npm run generate:assets  # og + icons egyben
     az ott leírt tapasztalat itt is releváns.
 - ✅ **JAVÍTVA (2026-07-18): a `.env.local.example` megtisztítva.**
   Korábban a **verziókövetett** fájl valós kinézetű jelszót tartalmazott
-  (`ADMIN_PASSWORD=...` és `NEXT_PUBLIC_ADMIN_PASSWORD=...`, mindkettő
-  `velencevill2025`). Elvégzett javítás:
+  (`ADMIN_PASSWORD=<projektnév+évszám mintájú jelszó>` és
+  `NEXT_PUBLIC_ADMIN_PASSWORD=<ugyanaz az érték>`). A konkrét értéket
+  szándékosan nem írjuk le — a `git log -S` megtalálja, ha kell.
+  Elvégzett javítás:
   1. Az `ADMIN_PASSWORD` értéke placeholder (üres) + komment, hogy erős,
      generált jelszót kell megadni.
   2. A `NEXT_PUBLIC_ADMIN_PASSWORD` sor **teljesen törölve**. A `NEXT_PUBLIC_`
@@ -87,10 +89,11 @@ npm run generate:assets  # og + icons egyben
      kulcs volt, a törlés nem tör el semmit. A valós auth szerver oldali:
      `src/lib/adminAuth.ts` + `src/app/api/admin/auth/route.ts`, `ADMIN_PASSWORD`.
 - 🔴 **TEENDŐ ÉLESBEN: jelszócsere kötelező.** A fájljavítás önmagában NEM elég.
-  A `velencevill2025` benne volt a git history-ban — ismertnek kell tekinteni.
-  Ha ez volt (vagy ez az) az élő admin jelszó, a Vercel → Settings →
-  Environment Variables alatt az `ADMIN_PASSWORD`-öt **cserélni kell** erős,
-  generált jelszóra, majd redeploy.
+  A régi érték **4 commit óta benne van a git history-ban** — ismertnek kell
+  tekinteni, és a history-ból a fájl javítása nem törli. Ha ez volt (vagy ez az)
+  az élő admin jelszó, a Vercel → Settings → Environment Variables alatt az
+  `ADMIN_PASSWORD`-öt **cserélni kell** erős, generált jelszóra, majd redeploy.
+  Ha ugyanez a jelszó máshol is használatban van, ott is cserélni kell.
 - ⚠️ **Szemét könyvtár a gyökérben: `{src`.** Egy elrontott brace-expansion hozta létre
   (`{src/{app,components/{ui,sections,layout},lib},public}` — PowerShellben/cmd-ben futtatott
   bash-szintaxis). Üres, nem része a buildnek. Nem töröltem (dokumentációs kör), de takarítható.
