@@ -1,5 +1,25 @@
 # Velence Vill Kft. — Weboldal
 
+Villamos szaküzlet / villanyszerelési anyag — Velence, Fejér megye.
+Lead-generáló marketing oldal: 3D villám hero, kalkulátorok, tudástár, márka- és
+termékoldalak, visszahívás-kérés, chat widget, VIP-oldal, admin felület.
+
+**Live URL:** `https://velencevill.hu` (forrás: `.env.example` → `NEXT_PUBLIC_SITE_URL`,
+`README` sitemap-hivatkozás). A tényleges bekötést nem ellenőriztem.
+
+> ⚠️ **Ez a repó erősen elavult stacken fut: Next 14 + React 18** — két, illetve egy
+> major verzió lemaradás a testvérprojektekhez képest. Részletek és a biztonsági
+> megjegyzések: `CLAUDE.md` → FIGYELEM.
+
+> ⚠️ Az alábbi „Struktúra" szekció **elavult** — jóval kevesebb komponenst és API
+> route-ot listáz, mint ami valójában létezik. A `CLAUDE.md` STRUKTÚRA szekciója a mért,
+> aktuális állapotot tartalmazza.
+
+> ⚠️ Env-fájlokból három is van (`.env.example`, `.env.local.example`, `.env.local`).
+> A mérvadó a **`.env.example`**. A `.env.local.example` 2026-07-18 óta szintén
+> placeholderes (a korábbi beégetett jelszó és a böngészőbe szivárgó
+> `NEXT_PUBLIC_ADMIN_PASSWORD` kulcs eltávolítva).
+
 ## Tech Stack
 - **Next.js 14** (App Router, TypeScript)
 - **Tailwind CSS**
