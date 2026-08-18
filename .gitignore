@@ -30,3 +30,5 @@ Thumbs.db
 # -- cowork housekeeping (2026-08-18) --
 _to_delete/
 .claude/
+
+.env*.local
