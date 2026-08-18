@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import MobileStickyBar from '@/components/MobileStickyBar';
 import CookieBanner from '@/components/CookieBanner';
@@ -109,7 +110,7 @@ const faqSchema = {
       name: 'Mikor van nyitva a Velence Vill szaküzlet?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Hétfőtől péntekig 8:00-16:00, szombaton 8:00-12:00, vasárnap zárva.',
+        text: 'Hétfőtőt péntekig 8:00-16:00, szombaton 8:00-12:00, vasárnap zárva.',
       },
     },
     {
@@ -145,6 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <MobileStickyBar />
         <CookieBanner />
         <ExitSurvey />
+        <Analytics />
       </body>
     </html>
   );
