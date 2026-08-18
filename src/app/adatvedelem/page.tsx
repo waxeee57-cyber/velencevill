@@ -69,7 +69,7 @@ export default function AdatvedelemPage() {
           <ul>
             <li style={li}>hozzáférés a kezelt adataihoz</li>
             <li style={li}>helyesbítés kérése</li>
-            <li style={li}>törlés („elfeledtetés") kérése</li>
+            <li style={li}>törlés („elfeledtetés&rdquo;) kérése</li>
             <li style={li}>az adatkezelés korlátozása</li>
             <li style={li}>hozzájárulás visszavonása bármikor</li>
             <li style={li}>panasz benyújtása a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH)</li>

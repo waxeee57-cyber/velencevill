@@ -147,6 +147,13 @@ select option {
   animation: ticker 22s linear infinite;
 }
 
+.news-bar-track {
+  animation: ticker 28s linear infinite;
+}
+.news-bar:hover .news-bar-track {
+  animation-play-state: paused;
+}
+
 @keyframes boltSpin {
   0%, 100% { transform: rotate(0deg) scale(1); }
   10%  { transform: rotate(-6deg) scale(1.05); }

@@ -1,0 +1,54 @@
+{
+  "_megjegyzes": "Kiinduló katalógus-vázlat, generikus terméktípus-nevekkel (nem valós SKU-lista). Az elerhetoseg mezőt (keszleten/korlatozott/rendelheto) a boltos kézzel állítja be — ez NEM élő raktárkészlet-adat. Valós termékfotók pótlása és a lista tételes felülvizsgálata a bolttal még hátravan.",
+  "kategoriak": [
+    { "slug": "kabelek", "nev": "Kábelek & vezetékek", "ikon": "⚡" },
+    { "slug": "kapcsolok", "nev": "Kapcsolók & dugaljak", "ikon": "🔌" },
+    { "slug": "elosztok", "nev": "Elosztók & szekrények", "ikon": "🗄️" },
+    { "slug": "vilagitas", "nev": "Világítástechnika", "ikon": "💡" },
+    { "slug": "szereles", "nev": "Szerelési anyagok", "ikon": "🔧" },
+    { "slug": "szerszamok", "nev": "Szerszámok & mérők", "ikon": "🛠️" }
+  ],
+  "termekek": [
+    { "id": "kab-01", "nev": "MCU 1,5 mm² szerelővezeték", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Tömör réz szerelővezeték, a legkeresettebb méret — falon belüli szereléshez.", "cimkek": ["MCU", "1,5mm²", "Réz"], "elerhetoseg": "keszleten" },
+    { "id": "kab-02", "nev": "MCU 2,5 mm² szerelővezeték", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Dugalj-áramkörökhöz ajánlott keresztmetszet.", "cimkek": ["MCU", "2,5mm²", "Réz"], "elerhetoseg": "keszleten" },
+    { "id": "kab-03", "nev": "NYM-J 3×1,5 kábel", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Köpenyes szerelőkábel világítási körökhöz, nedves helyiségbe is.", "cimkek": ["NYM-J", "3×1,5"], "elerhetoseg": "keszleten" },
+    { "id": "kab-04", "nev": "NYM-J 3×2,5 kábel", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Köpenyes szerelőkábel dugalj- és erősáramú körökhöz.", "cimkek": ["NYM-J", "3×2,5"], "elerhetoseg": "keszleten" },
+    { "id": "kab-05", "nev": "NYY-J 5×2,5 földkábel", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Föld alá fektethető erősáramú kábel, pl. kerti világításhoz, EV töltőhöz.", "cimkek": ["NYY-J", "Földkábel", "5×2,5"], "elerhetoseg": "rendelheto" },
+    { "id": "kab-06", "nev": "CYKY 3×2,5 kábel", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Elterjedt szerelőkábel-típus, falon kívüli és belüli szerelésre.", "cimkek": ["CYKY", "3×2,5"], "elerhetoseg": "korlatozott" },
+    { "id": "kab-07", "nev": "UTP Cat6 hálózati kábel", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Strukturált hálózati kábelezéshez, méterre és dobra is.", "cimkek": ["UTP", "Cat6", "Hálózat"], "elerhetoseg": "keszleten" },
+    { "id": "kab-08", "nev": "Koax kábel (RG6)", "kategoria": "kabelek", "marka": "Generikus", "leiras": "Antenna- és SAT-jel elvezetéséhez.", "cimkek": ["Koax", "RG6", "Antenna"], "elerhetoseg": "korlatozott" },
+
+    { "id": "kap-01", "nev": "Schneider Asfora egyes kapcsoló", "kategoria": "kapcsolok", "marka": "Schneider Electric", "leiras": "Kedvelt beltéri kapcsolósorozat, több színben.", "cimkek": ["Schneider", "Asfora", "Beltéri"], "elerhetoseg": "keszleten" },
+    { "id": "kap-02", "nev": "Legrand Valena dugalj", "kategoria": "kapcsolok", "marka": "Legrand", "leiras": "Klasszikus fali dugalj, földeléssel, fehér és antracit kivitelben.", "cimkek": ["Legrand", "Valena", "Dugalj"], "elerhetoseg": "keszleten" },
+    { "id": "kap-03", "nev": "Kanlux Logi kültéri dugalj IP44", "kategoria": "kapcsolok", "marka": "Kanlux", "leiras": "Fröccsenő víz ellen védett dugalj teraszra, kertbe.", "cimkek": ["Kanlux", "IP44", "Kültéri"], "elerhetoseg": "korlatozott" },
+    { "id": "kap-04", "nev": "WAGO gyorscsatlakozó (221-es sorozat)", "kategoria": "kapcsolok", "marka": "WAGO", "leiras": "Szerszám nélküli vezetékösszekötő, a legtöbbet fogyó szerelési kellék.", "cimkek": ["WAGO", "221", "Gyorscsatlakozó"], "elerhetoseg": "keszleten" },
+    { "id": "kap-05", "nev": "IP65 ütésálló kapcsoló", "kategoria": "kapcsolok", "marka": "Generikus", "leiras": "Műhelybe, garázsba, ipari környezetbe ajánlott kapcsoló.", "cimkek": ["IP65", "Ütésálló", "Ipari"], "elerhetoseg": "rendelheto" },
+    { "id": "kap-06", "nev": "Egyedi dizájn kapcsolósor (üveg/fém front)", "kategoria": "kapcsolok", "marka": "Válogatott", "leiras": "Prémium megjelenésű kapcsolósorozat igényes belsőépítészeti projektekhez.", "cimkek": ["Design", "Prémium"], "elerhetoseg": "korlatozott" },
+
+    { "id": "elo-01", "nev": "Csatári Plast lakáselosztó 1×12", "kategoria": "elosztok", "marka": "Csatári Plast", "leiras": "12 modulos falon kívüli elosztószekrény, családi házi méret.", "cimkek": ["Csatári Plast", "Elosztó", "12 modul"], "elerhetoseg": "keszleten" },
+    { "id": "elo-02", "nev": "Legrand kismegszakító 16A (B karakterisztika)", "kategoria": "elosztok", "marka": "Legrand", "leiras": "A legkeresettebb kismegszakító-méret dugalj- és világítási körökhöz.", "cimkek": ["Legrand", "16A", "Kismegszakító"], "elerhetoseg": "keszleten" },
+    { "id": "elo-03", "nev": "FI-relé 4P 30mA", "kategoria": "elosztok", "marka": "Generikus", "leiras": "Életvédelmi relé, kötelező elem minden lakáselosztóban.", "cimkek": ["FI-relé", "30mA", "Életvédelem"], "elerhetoseg": "keszleten" },
+    { "id": "elo-04", "nev": "Nagy Amper-számú főkapcsoló (ipari)", "kategoria": "elosztok", "marka": "Generikus", "leiras": "Ipari fogyasztásmérő elé, nagyobb teljesítményű bekötésekhez.", "cimkek": ["Főkapcsoló", "Ipari", "Nagy Amper"], "elerhetoseg": "korlatozott" },
+    { "id": "elo-05", "nev": "Sínre szerelhető kontaktor", "kategoria": "elosztok", "marka": "Generikus", "leiras": "Terhelés kapcsolására, pl. hőtárolós fűtés vagy világítási csoportok vezérlésére.", "cimkek": ["Kontaktor", "DIN-sín"], "elerhetoseg": "rendelheto" },
+    { "id": "elo-06", "nev": "Villámvédelmi túlfeszültség-levezető", "kategoria": "elosztok", "marka": "Generikus", "leiras": "B+C osztályú levezető elosztószekrénybe, érzékeny elektronika védelmére.", "cimkek": ["Túlfeszültség-védelem", "Villámvédelem"], "elerhetoseg": "rendelheto" },
+
+    { "id": "vil-01", "nev": "EGLO LED mennyezeti lámpa", "kategoria": "vilagitas", "marka": "EGLO", "leiras": "Modern beltéri mennyezeti lámpa, melegfehér fénnyel.", "cimkek": ["EGLO", "LED", "Mennyezeti"], "elerhetoseg": "keszleten" },
+    { "id": "vil-02", "nev": "Rábalux kültéri fali lámpa IP44", "kategoria": "vilagitas", "marka": "Rábalux", "leiras": "Bejárati és teraszvilágításhoz, csapadékálló kivitelben.", "cimkek": ["Rábalux", "IP44", "Kültéri"], "elerhetoseg": "keszleten" },
+    { "id": "vil-03", "nev": "GLOBO LED beépíthető spot", "kategoria": "vilagitas", "marka": "GLOBO", "leiras": "Álmennyezetbe süllyeszthető spotlámpa, fürdőszobába is.", "cimkek": ["GLOBO", "Spot", "Süllyesztett"], "elerhetoseg": "korlatozott" },
+    { "id": "vil-04", "nev": "LED fénycső T8, 120 cm", "kategoria": "vilagitas", "marka": "Generikus", "leiras": "Hagyományos fénycsövek energiatakarékos LED-es váltása műhelybe, garázsba.", "cimkek": ["LED fénycső", "T8"], "elerhetoseg": "keszleten" },
+    { "id": "vil-05", "nev": "Szenzoros mozgásérzékelős lámpa", "kategoria": "vilagitas", "marka": "Generikus", "leiras": "Automatikus kapcsolás mozgásra, bejárathoz, lépcsőházba.", "cimkek": ["Mozgásérzékelő", "Szenzor"], "elerhetoseg": "korlatozott" },
+    { "id": "vil-06", "nev": "Egyedi dizájn függeszték", "kategoria": "vilagitas", "marka": "Válogatott", "leiras": "Különleges formavilágú dekor-lámpatest nappaliba, étkezőbe.", "cimkek": ["Design", "Függeszték"], "elerhetoseg": "rendelheto" },
+
+    { "id": "sze-01", "nev": "OBO kábelcsatorna 40×40", "kategoria": "szereles", "marka": "OBO", "leiras": "Felületre szerelhető kábelcsatorna, festhető fehér kivitelben.", "cimkek": ["OBO", "Kábelcsatorna", "40×40"], "elerhetoseg": "keszleten" },
+    { "id": "sze-02", "nev": "65-ös szerelvénydoboz", "kategoria": "szereles", "marka": "Generikus", "leiras": "Falon belüli süllyesztett szerelvénydoboz kapcsolóhoz, dugaljhoz — a legfogyóbb tétel.", "cimkek": ["65-ös doboz", "Süllyesztett"], "elerhetoseg": "keszleten" },
+    { "id": "sze-03", "nev": "Gégecső 16mm", "kategoria": "szereles", "marka": "Generikus", "leiras": "Vezetékvédő gégecső falazatba, aljzatbetonba.", "cimkek": ["Gégecső", "16mm"], "elerhetoseg": "keszleten" },
+    { "id": "sze-04", "nev": "Falihüvely, tipli-csavar szett", "kategoria": "szereles", "marka": "Generikus", "leiras": "Rögzítőanyag dobozokhoz, kábelcsatornákhoz, elosztókhoz.", "cimkek": ["Tipli", "Rögzítés"], "elerhetoseg": "keszleten" },
+    { "id": "sze-05", "nev": "Tűzgátló manzsetta, kábelátvezetéshez", "kategoria": "szereles", "marka": "Generikus", "leiras": "Tűzvédelmi átvezetés társasházi, ipari installációhoz.", "cimkek": ["Tűzvédelem", "Átvezetés"], "elerhetoseg": "rendelheto" },
+
+    { "id": "szr-01", "nev": "1000V szigetelt csavarhúzó készlet", "kategoria": "szerszamok", "marka": "Generikus", "leiras": "Feszültség alatti munkához engedélyezett szigetelt szerszámkészlet.", "cimkek": ["1000V", "Szigetelt", "Készlet"], "elerhetoseg": "keszleten" },
+    { "id": "szr-02", "nev": "Digitális multiméter", "kategoria": "szerszamok", "marka": "Generikus", "leiras": "Feszültség, áram, ellenállás mérésére, szerelőknek és barkácsolóknak.", "cimkek": ["Multiméter", "Mérőműszer"], "elerhetoseg": "keszleten" },
+    { "id": "szr-03", "nev": "Fázisceruza / fázisérzékelő", "kategoria": "szerszamok", "marka": "Generikus", "leiras": "Gyors, biztonságos feszültség-ellenőrzéshez.", "cimkek": ["Fázisceruza", "Érintés nélküli"], "elerhetoseg": "keszleten" },
+    { "id": "szr-04", "nev": "Kábelcsupaszoló és krimpelő fogó", "kategoria": "szerszamok", "marka": "Generikus", "leiras": "Precíz vezetékelőkészítéshez, csatlakozó présléshez.", "cimkek": ["Csupaszoló", "Krimpelő"], "elerhetoseg": "korlatozott" },
+    { "id": "szr-05", "nev": "Akkus fúró-csavarozó szett", "kategoria": "szerszamok", "marka": "Generikus", "leiras": "Szerelvényezéshez, dobozok, csatornák rögzítéséhez.", "cimkek": ["Akkus", "Fúró-csavarozó"], "elerhetoseg": "rendelheto" }
+  ]
+}

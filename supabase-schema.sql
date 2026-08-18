@@ -106,3 +106,63 @@ CREATE INDEX IF NOT EXISTS vip_offers_active_idx ON vip_offers (active, created_
 
 -- vip-files bucket: publikus olvasás; feltöltés CSAK service_role (anon nem).
 -- (A vip_files_anon_upload policy eltávolítva.)
+
+-- ============================================================================
+-- SITE_NOTICES (napi hírek a fejlécben)
+--   anon CSAK az aktív híreket olvashatja (publikus sáv).
+--   Írás kizárólag service_role-on át, a token-védett /api/admin/notices route-on.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS site_notices (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ DEFAULT NOW(),
+  body        TEXT NOT NULL,
+  href        TEXT,
+  active      BOOLEAN DEFAULT TRUE
+);
+ALTER TABLE site_notices ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "notices_anon_select_active" ON site_notices FOR SELECT TO anon USING (active = true);
+CREATE INDEX IF NOT EXISTS site_notices_active_idx ON site_notices (active, created_at DESC);
+
+-- ============================================================================
+-- MATERIAL_LISTS (anyaglista — "kosár" helyett: darabszám, ár nélkül)
+--   anon csak INSERT; az admin olvasás/módosítás service_role-os API route-on
+--   (/api/admin/material-lists), ugyanaz a minta mint a leads/callback_requests.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS material_lists (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  nev         TEXT NOT NULL,
+  telefon     TEXT NOT NULL,
+  megjegyzes  TEXT,
+  tetelek     JSONB NOT NULL,
+  statusz     TEXT DEFAULT 'uj',
+  forras      TEXT DEFAULT 'anyaglista_oldal',
+  kesz_at     TIMESTAMPTZ
+);
+ALTER TABLE material_lists ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "material_lists_anon_insert" ON material_lists FOR INSERT TO anon WITH CHECK (true);
+CREATE INDEX IF NOT EXISTS material_lists_statusz_idx ON material_lists (statusz);
+CREATE INDEX IF NOT EXISTS material_lists_created_idx ON material_lists (created_at DESC);
+
+-- ============================================================================
+-- VIP_REQUESTS (VIP gyorskapu — fotózott/kézzel írt anyaglista, opcionális
+--   hangüzenettel). Kizárólag a service_role-os /api/vip/quick-request route
+--   ír bele (a fájlfeltöltés miatt is szükséges az emelt jogosultság) —
+--   nincs anon insert policy, ugyanaz a védelmi minta mint a vip_offers-nél.
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS vip_requests (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  nev         TEXT NOT NULL,
+  telefon     TEXT NOT NULL,
+  uzenet      TEXT,
+  kep_url     TEXT,
+  hang_url    TEXT,
+  statusz     TEXT DEFAULT 'uj'
+);
+ALTER TABLE vip_requests ENABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS vip_requests_statusz_idx ON vip_requests (statusz);
+CREATE INDEX IF NOT EXISTS vip_requests_created_idx ON vip_requests (created_at DESC);
+-- (Szándékosan nincs anon policy: RLS engedélyezve, de policy nélkül minden
+-- anon hozzáférés tiltott — csak a service_role-os route írhat/olvashat.)

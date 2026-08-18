@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import VipQuickRequestForm from '@/components/VipQuickRequestForm'
 
 export const metadata: Metadata = {
   title: 'VIP Partner | Velence Vill Kft.',
@@ -179,6 +180,14 @@ export default async function VipPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* VIP gyorskapu — fotó/hangüzenet alapú anyaglista küldés */}
+        <div className="mb-12">
+          <h2 className="text-xl font-semibold mb-6 text-center text-gray-300">
+            VIP gyorskapu
+          </h2>
+          <VipQuickRequestForm />
         </div>
 
         {/* Aktuális ajánlatok */}
