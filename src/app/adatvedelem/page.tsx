@@ -61,7 +61,7 @@ export default function AdatvedelemPage() {
           <p style={para}>A működéshez az alábbi adatfeldolgozók szolgáltatásait vehetjük igénybe:</p>
           <ul>
             <li style={li}><strong>Vercel Inc.</strong> — weboldal tárhely / hosting</li>
-            <li style={li}><strong>Supabase</strong> — a beérkező megkeresések biztonságos tárolása (adatbázis)</li>
+            <li style={li}><strong>Vercel Blob</strong> — a beérkező megkeresések biztonságos, privát tárolása</li>
             <li style={li}><strong>Resend</strong> — e-mail értesítések kézbesítése</li>
           </ul>
 

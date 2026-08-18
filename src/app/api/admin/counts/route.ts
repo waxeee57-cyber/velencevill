@@ -1,27 +1,24 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { countWhere, isBlobConfigured } from '@/lib/blobStore';
 
-// Fejléc badge: hány 'uj' státuszú lead + visszahívás van.
+// Fejléc badge: hány 'uj' státuszú tétel van kollekciónként.
 export async function GET(request: Request) {
   const auth = request.headers.get('authorization') ?? '';
   if (!verifyAdminToken(auth.startsWith('Bearer ') ? auth.slice(7) : '')) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json({ newLeads: 0, newCallbacks: 0 });
+  if (!isBlobConfigured()) {
+    return NextResponse.json({ newLeads: 0, newCallbacks: 0, newMaterialLists: 0, newVipRequests: 0 });
+  }
 
-  const [leads, callbacks, materialLists, vipRequests] = await Promise.all([
-    sb.from('leads').select('id', { count: 'exact', head: true }).eq('statusz', 'uj'),
-    sb.from('callback_requests').select('id', { count: 'exact', head: true }).eq('statusz', 'uj'),
-    sb.from('material_lists').select('id', { count: 'exact', head: true }).eq('statusz', 'uj'),
-    sb.from('vip_requests').select('id', { count: 'exact', head: true }).eq('statusz', 'uj'),
+  const isNew = (i: { statusz?: string }) => i.statusz === 'uj';
+  const [newLeads, newCallbacks, newMaterialLists, newVipRequests] = await Promise.all([
+    countWhere('leads', isNew),
+    countWhere('callback_requests', isNew),
+    countWhere('material_lists', isNew),
+    countWhere('vip_requests', isNew),
   ]);
 
-  return NextResponse.json({
-    newLeads: leads.count ?? 0,
-    newCallbacks: callbacks.count ?? 0,
-    newMaterialLists: materialLists.count ?? 0,
-    newVipRequests: vipRequests.count ?? 0,
-  });
+  return NextResponse.json({ newLeads, newCallbacks, newMaterialLists, newVipRequests });
 }

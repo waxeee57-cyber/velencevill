@@ -4,19 +4,21 @@
 A **Velence Vill Kft.** (villamos szaküzlet / villanyszerelési anyag — Velence, Fejér megye)
 weboldala. Lead-generáló marketing oldal: 3D villám hero, kalkulátorok, tudástár,
 márka- és termékoldalak, visszahívás-kérés, chat widget, VIP-oldal, admin felület.
-A leadek Supabase-be mennek, az értesítő Resenden.
+A leadek **Vercel Blob**-ba mennek (privát JSON-kollekciók, lásd `src/lib/blobStore.ts`),
+az értesítő Resenden. **Nincs relációs adatbázis a projektben** (2026-08-18: Supabase
+teljesen kivezetve, lásd HOL TART).
 Partner a `Partner.tsx` szerint: **Mike József**.
 Forrás: `README.md` + `src/app/layout.tsx` + a route-struktúra.
 
-## STACK (mérve: package.json, 2026-07-18)
-- next@14.2.5 (App Router) — **⚠️ 2 major lemaradás, lásd FIGYELEM**
+## STACK (mérve: package.json, 2026-08-18)
+- next@14.2.35 (App Router) — **⚠️ 2 major lemaradás, lásd FIGYELEM**
 - react@^18 / react-dom@^18 — **⚠️ 1 major lemaradás**
-- @supabase/supabase-js@^2.43.4 — lead tárolás
+- @vercel/blob@^2.8.0 — privát JSON-kollekció-tár (leadek, anyaglisták, VIP-kérések, chat) + publikus fájlfeltöltés (VIP ajánlat PDF, VIP gyorskérés fotó/hang)
 - resend@^3.2.0 — email értesítők
 - three@^0.165.0 (+ @types/three) — 3D villám hero
 - clsx@^2.1.1
 - tailwindcss@^3.4.1 + postcss@^8 + autoprefixer@^10.0.1 (**Tailwind 3**, `tailwind.config.js`)
-- typescript@^5, eslint@^8 + eslint-config-next@14.2.5
+- typescript@^5, eslint@^8 + eslint-config-next@14.2.35
 - sharp-cli@^2.1.1 (dev — asset generálás)
 - Deploy: Vercel — bizonyíték: `vercel.json` (`{"framework": "nextjs"}`) + `.vercel/`
 
@@ -32,32 +34,68 @@ npm run generate:assets  # og + icons egyben
 ```
 > TODO: ismeretlen — nincs `typecheck` script. Kézzel: `npx tsc --noEmit`.
 
-**Supabase séma:** Supabase Dashboard → SQL Editor → a `supabase-schema.sql` tartalma → Run.
+**Vercel Blob store létrehozása (egyszeri, kézi lépés — nincs rá MCP/API eszköz):**
+Vercel Dashboard → a `velencevill` projekt → Storage → Create Database → Blob →
+kösd a projekthez. Ez automatikusan felveszi a `BLOB_READ_WRITE_TOKEN` env változót
+minden környezetre (Production/Preview/Development) — nincs kézi kulcsmásolás.
+Enélkül minden admin/leadgen funkció `503`-at ad ("A tároló nincs beállítva").
+`supabase-schema.sql` deprecated, csak dokumentációs referencia — lásd HOL TART.
 
 ## STRUKTÚRA
 - `src/app/` — App Router. Route-ok: `admin`, `api`, `kalkulator`, `vip`, `tudastar`, `markak`, `szerelo`, `helyi`, `termekek`, `anyaglista`, `aszf`, `adatvedelem`, `cookie-tajekoztato` + `layout.tsx`, `page.tsx`, `robots.ts`, `sitemap.ts`, `loading.tsx`, `not-found.tsx`
-- `src/app/api/` — `lead`, `chat`, `callback`, `calculator-lead`, `anyaglista`, `notices`, `vip/quick-request`, `admin/auth`, `admin/material-lists`, `admin/vip-requests`, `admin/notices`
+- `src/app/api/` — `lead`, `chat` (+ `chat/start`, `chat/message`, `chat/messages`, `chat/reply`, `chat/threads`), `callback`, `calculator-lead`, `anyaglista`, `notices`, `vip/quick-request`, `admin/auth`, `admin/leads`, `admin/callbacks`, `admin/material-lists`, `admin/vip-requests`, `admin/vip-offers`, `admin/notices`, `admin/counts`
 - `src/components/` — `layout/` (Navbar, Footer), `sections/` (Hero, Products, Brands, Partner, Social, ContactForm, Reviews, ProSection), `ui/` (Toast) + gyökérszintű widgetek: `ChatWidget`, `CookieBanner`, `CalculatorHub`, `ExitSurvey`, `WhatsAppButton`, `MobileStickyBar`, `CallbackButton`, `FloatingBolt`, `ProductCard`, `ProductSearch`, `AvailabilityBadge`, `VipQuickRequestForm`
-- `src/lib/` — `supabase.ts`, `supabaseBrowser.ts`, `supabaseAdmin.ts` (service role), `adminAuth.ts`, `security.ts`, `termekek.ts` (katalógus + prediktív kereső), `anyaglistaStore.ts` (localStorage pub/sub)
+- `src/lib/` — `blobStore.ts` (Vercel Blob JSON-kollekció-tár, a Supabase-t váltotta ki), `adminAuth.ts`, `security.ts`, `termekek.ts` (katalógus + prediktív kereső), `anyaglistaStore.ts` (localStorage pub/sub, az anyaglista/kosár állapota — NE keverd a `blobStore.ts`-szel, más réteg)
 - `src/hooks/` — `useReveal.ts`, `useAnyaglista.ts`
 - `src/data/termekek.json` — a termékkatalógus forrása (kézzel szerkeszthető, NEM élő raktárkészlet)
 - `scripts/` — `generate-og-image.js`, `generate-icons.js`
 - `cards/` — névjegykártya-designok (`.png`) + `generate_cards.py`. Nem a build része
-- `supabase-schema.sql` — az adatbázis séma forrása
+- `supabase-schema.sql` — **deprecated**, csak dokumentációs referencia (2026-08-18-tól nem fut éles adatbázison)
 - `public/` — statikus assetek
 
 ## KONVENCIÓK
 - TypeScript (`tsconfig.json`), Tailwind 3 (`tailwind.config.js`)
-- **Supabase kétrétegű hozzáférés:** `supabaseBrowser.ts` (anon key, kliens) vs `supabaseAdmin.ts` (`SUPABASE_SERVICE_ROLE_KEY`, kizárólag szerveroldal). A service role kulcs SOHA nem mehet kliensre
-- **RLS:** a globális DomRol szabály szerint minden Supabase táblán kötelező, soha nem disabled. Ellenőrizd a `supabase-schema.sql`-ben, mielőtt táblát adsz hozzá
+- **Adattárolás: Vercel Blob, kizárólag szerveroldalon.** `src/lib/blobStore.ts` a `BLOB_READ_WRITE_TOKEN`-nel dolgozik (nincs `NEXT_PUBLIC_` prefix — sosem kerül kliens bundle-be). Minden kollekció egy privát JSON blob (`data/<name>.json`); a fájlfeltöltések (VIP ajánlat PDF, VIP gyorskérés fotó/hang) publikus, véletlen-szuffixű blob URL-ek — ugyanaz a biztonsági szint, mint korábban a Supabase Storage public bucket-nél volt
+- **Nincs tranzakció/konkurenciakezelés** a blobStore-ban (olvas-módosít-ír teljes felülírással) — tudatos, dokumentált kompromisszum egy kisforgalmú admin panelnél. Ha ez valaha szűk keresztmetszet lenne, az egy külön kör (valódi DB)
 - Az admin jelszóval véd (`ADMIN_PASSWORD`, `src/lib/adminAuth.ts`) — a `.env.example` szerint "required — no fallback"
 - Az abszolút URL a `NEXT_PUBLIC_SITE_URL`-ből jön (`layout.tsx`, `sitemap.ts`, `robots.ts`)
 - Magyar nyelvű tartalom, magyar route-nevek (`kalkulator`, `tudastar`, `markak`, `szerelo`)
-- Globális DomRol szabályok, amik ide vonatkoznak: `.env` soha nem commitolható; RLS minden Supabase táblán; `console.log` tilos production kódban; commit formátum `feat/fix/chore/style/seo: leírás`
+- Globális DomRol szabályok, amik ide vonatkoznak: `.env` soha nem commitolható; `console.log` tilos production kódban; commit formátum `feat/fix/chore/style/seo: leírás`. (A "RLS minden Supabase táblán" szabály itt már nem releváns — nincs Supabase.)
 - Megjegyzés: ez **ügyfélprojekt**, nem DomRol-termék — a globális DomRol design system itt NEM érvényes
 
 ## HOL TART
-- 2026-08-18: nagyobb funkciócsomag (Cowork-ből, a helyi `C:\projects\velencevill` munkakönyvtárral szinkronban):
+- 2026-08-18 (2. kör, Supabase teljes kivezetése): az élő admin panel `TypeError: fetch failed`
+  hibával állt (minden fülön) — mérve: a deployolt JS bundle-ből kiolvasott
+  `NEXT_PUBLIC_SUPABASE_URL` (`uqlzipyiuowpeuwxobuj.supabase.co`) DNS-ben nem oldódott fel
+  (`Name or service not known`, ellenőrizve WebFetch-csel), vagyis a Vercel env egy törölt/rossz
+  Supabase projektre mutatott. A user döntése: **Supabase teljes kihagyása**, nem a régi javítása.
+  - Minden Supabase-hívás (21 fájl: `supabaseAdmin.ts`/`supabase.ts`/`supabaseBrowser.ts` + 18
+    API route/komponens) lecserélve `src/lib/blobStore.ts`-re (Vercel Blob-alapú, privát JSON-
+    kollekció-tár: leads, callback_requests, material_lists, vip_requests, vip_offers,
+    site_notices, chats, chat_messages).
+  - Fájlfeltöltés (VIP ajánlat PDF, VIP gyorskérés fotó/hang) publikus, véletlen-szuffixű Blob
+    URL-re megy — 1:1 ugyanaz a biztonsági szint, mint a korábbi Supabase Storage public bucket.
+  - **Chat: Supabase Realtime → 4 mp-es polling.** `ChatWidget.tsx` és az admin `ChatTab` korábban
+    `postgres_changes` feliratkozással kapott azonnali üzenetet; ez Blob-bal nem lehetséges
+    (nincs pub/sub), ezért `GET /api/chat/messages?chatId=` pollingra váltott. **Tudatos UX-
+    regresszió**: pár másodperces késleltetés az azonnali helyett — ha ez zavaró élesben, a
+    következő lépés egy valódi pub/sub szolgáltatás (pl. Pusher/Ably) bevonása lenne, nem a
+    Supabase visszahozása.
+  - `package.json`: `@supabase/supabase-js` ki, `@vercel/blob@^2.8.0` be (mért, élő npm registry
+    verzió — nem feltevés). `npm install` lefutott, lockfile frissült.
+  - `supabase-schema.sql` deprecated fejléccel megjelölve (nem törölve — referenciának megmaradt).
+  - Build/lint/typecheck zöld, `BLOB_READ_WRITE_TOKEN` NÉLKÜL is (graceful 503/üres lista, nem
+    crash) — smoke tesztelve `next start`-tal lokálisan.
+  - **TEENDŐ ÉLESBEN (kézi lépés, nincs rá API/MCP eszköz):** Vercel Dashboard → `velencevill`
+    projekt → Storage → Create Database → Blob → csatlakoztasd a projekthez. Ez automatikusan
+    felveszi a `BLOB_READ_WRITE_TOKEN`-t minden környezetre. Eddig a pontig minden admin/leadgen
+    funkció `503`-at ad.
+  - `npm audit`: 13 sebezhetőség (2 moderate, 11 high) — **mérve: egyik sem a `@vercel/blob`-tól
+    jön** (`npm ls @vercel/blob` — nulla transitív dependency-riasztás). Mind pre-existing,
+    ismert tétel (`next@14.2.35` — sok újabb CVE azóta jelentve, csak Next 16-ra ugorva javítható;
+    `sharp-cli`, `resend→js-beautify→js-cookie`, `eslint-config-next→glob`). Nem ennek a körnek a
+    scope-ja — külön feladat, ha a user kéri.
+- 2026-08-18 (1. kör): nagyobb funkciócsomag (Cowork-ből, a helyi `C:\projects\velencevill` munkakönyvtárral szinkronban):
   - **Termékkatalógus + elérhetőségi szemafór**: `src/data/termekek.json` (kézzel szerkeszthető, NEM élő
     raktárkészlet-adat — 3 státusz: keszleten/korlatozott/rendelheto), `AvailabilityBadge`, `ProductCard`,
     `/termekek` teljesen újraépítve kereshető, kategóriaszűrős kártyarácsként.
@@ -90,7 +128,6 @@ npm run generate:assets  # og + icons egyben
   - `react@^18` — a testvérprojektek React 19-en. **Egy major lemaradás.**
   - `resend@^3.2.0` — a testvérprojektekben `^6.x`. **Három major lemaradás.**
   - `eslint@^8` — a testvérprojektekben `^9`.
-  - `@supabase/supabase-js@^2.43.4` — 2.x-en belül elavult patch-szint.
   - **Következmény:** a Next 14 App Router API-ja érdemben eltér a Next 15/16-tól
     (pl. async `params`/`searchParams`, caching alapértelmezések). Ne másolj át kódot
     a testvérprojektekből ellenőrzés nélkül, és fordítva se.

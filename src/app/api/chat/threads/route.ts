@@ -1,39 +1,56 @@
 import { NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAll, isBlobConfigured } from '@/lib/blobStore';
+
+interface ChatRecord {
+  id: string;
+  created_at: string;
+  nev: string | null;
+  telefon: string | null;
+  status: string;
+  last_message_at: string;
+}
+
+interface ChatMessageRecord {
+  id: string;
+  chat_id: string;
+  sender: 'user' | 'admin';
+  content: string;
+  created_at: string;
+}
 
 function bearer(request: Request): string {
   const auth = request.headers.get('authorization') ?? '';
   return auth.startsWith('Bearer ') ? auth.slice(7) : '';
 }
 
-// Admin: chat beszélgetések + üzenetek listája (service_role, RLS bypass).
+// Admin: chat beszélgetések + üzenetek listája.
 export async function GET(request: Request) {
   if (!verifyAdminToken(bearer(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const sb = getSupabaseAdmin();
-  if (!sb) {
+  if (!isBlobConfigured()) {
     return NextResponse.json(
-      { error: 'Supabase szerver kulcs nincs beállítva (SUPABASE_SERVICE_ROLE_KEY).' },
+      { error: 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).' },
       { status: 503 },
     );
   }
 
-  const { data, error } = await sb
-    .from('chats')
-    .select('id, nev, telefon, status, created_at, last_message_at, chat_messages(id, sender, content, created_at)')
-    .order('last_message_at', { ascending: false })
-    .limit(100);
+  const [chats, messages] = await Promise.all([
+    getAll<ChatRecord>('chats'),
+    getAll<ChatMessageRecord>('chat_messages'),
+  ]);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const threads = (data ?? []).map((c) => ({
-    ...c,
-    chat_messages: ((c.chat_messages as { created_at: string }[] | null) ?? [])
-      .slice()
-      .sort((a, b) => a.created_at.localeCompare(b.created_at)),
-  }));
+  const threads = chats
+    .map((c) => ({
+      ...c,
+      chat_messages: messages
+        .filter((m) => m.chat_id === c.id)
+        .slice()
+        .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    }))
+    .sort((a, b) => b.last_message_at.localeCompare(a.last_message_at))
+    .slice(0, 100);
 
   return NextResponse.json({ threads });
 }

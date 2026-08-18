@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { sanitizeForEmail } from '@/lib/security';
+import { insertOne } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
+
+interface LeadRecord {
+  id: string;
+  created_at: string;
+  nev: string;
+  telefon: string;
+  email: string | null;
+  tema: string | null;
+  uzenet: string | null;
+  tipus: 'szakuzlet' | 'szerelo';
+  statusz: string;
+  source: string;
+  contacted_at: string | null;
+  notes: string | null;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,32 +32,28 @@ export async function POST(req: NextRequest) {
     const id = crypto.randomUUID();
     let saved = false;
 
-    // ── 1. Mentés Supabase-be (leads tábla, magyar oszlopnevek) ──
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        // Kliens-oldali id-t adunk át, így nincs szükség RETURNING-re (anon nem olvashat).
-        const { error } = await supabase.from('leads').insert({
-          id,
-          nev: name.trim(),
-          telefon: phone.trim(),
-          email: email?.trim() || null,
-          tema: subject || null,
-          uzenet: message?.trim() || null,
-          tipus: 'szakuzlet',
-          statusz: 'uj',
-          source: 'contact_form',
-        });
-        if (!error) saved = true;
-      } catch {
-        /* DB hiba — megpróbáljuk az emailt */
-      }
+    // ── 1. Mentés (leads kollekció) ──
+    try {
+      await insertOne<LeadRecord>('leads', {
+        id,
+        created_at: new Date().toISOString(),
+        nev: name.trim(),
+        telefon: phone.trim(),
+        email: email?.trim() || null,
+        tema: subject || null,
+        uzenet: message?.trim() || null,
+        tipus: 'szakuzlet',
+        statusz: 'uj',
+        source: 'contact_form',
+        contacted_at: null,
+        notes: null,
+      });
+      saved = true;
+    } catch {
+      /* tárolási hiba — megpróbáljuk az emailt */
     }
 
-    // ── 2. Email értesítés (a hiba NEM végzetes, ha a DB mentés sikerült) ──
+    // ── 2. Email értesítés (a hiba NEM végzetes, ha a mentés sikerült) ──
     const resendKey = process.env.RESEND_API_KEY;
     let emailSent = false;
     if (resendKey) {
@@ -74,7 +86,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── 3. Ha sem DB, sem email nem ment át → értelmes hiba a telefonszámmal ──
+    // ── 3. Ha sem a mentés, sem az email nem ment át → értelmes hiba a telefonszámmal ──
     if (!saved && !emailSent) {
       return NextResponse.json(
         { error: `Nem sikerült rögzíteni a kérést. Kérjük hívjon közvetlenül: ${PHONE}` },

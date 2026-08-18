@@ -1,22 +1,27 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAll } from '@/lib/blobStore';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+interface NoticeRecord {
+  id: string;
+  created_at: string;
+  body: string;
+  href: string | null;
+  active: boolean;
+}
+
 export async function GET() {
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json({ notices: [] });
-
-  const { data, error } = await sb
-    .from('site_notices')
-    .select('id, body, href')
-    .eq('active', true)
-    .order('created_at', { ascending: false })
-    .limit(12);
-
-  if (error) {
+  try {
+    const notices = await getAll<NoticeRecord>('site_notices');
+    const active = notices
+      .filter((n) => n.active)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .slice(0, 12)
+      .map(({ id, body, href }) => ({ id, body, href }));
+    return NextResponse.json({ notices: active });
+  } catch {
     return NextResponse.json({ notices: [] });
   }
-  return NextResponse.json({ notices: data ?? [] });
 }

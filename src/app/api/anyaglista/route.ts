@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { sanitizeForEmail } from '@/lib/security';
+import { insertOne } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
 const MAX_ITEMS = 60;
@@ -11,6 +12,18 @@ interface TetelInput {
   kategoria?: string;
   marka?: string;
   mennyiseg: number;
+}
+
+interface MaterialListRecord {
+  id: string;
+  created_at: string;
+  nev: string;
+  telefon: string;
+  megjegyzes: string | null;
+  tetelek: TetelInput[];
+  statusz: string;
+  forras: string;
+  kesz_at: string | null;
 }
 
 function isValidTetel(t: unknown): t is TetelInput {
@@ -38,29 +51,25 @@ export async function POST(req: NextRequest) {
     const id = crypto.randomUUID();
     let saved = false;
 
-    // ── 1. Mentés Supabase-be (material_lists tábla) ──
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        const { error } = await supabase.from('material_lists').insert({
-          id,
-          nev: nev.trim(),
-          telefon: telefon.trim(),
-          megjegyzes: megjegyzes?.trim() || null,
-          tetelek: safeTetelek,
-          statusz: 'uj',
-          forras: 'anyaglista_oldal',
-        });
-        if (!error) saved = true;
-      } catch {
-        /* DB hiba — megpróbáljuk az emailt */
-      }
+    // ── 1. Mentés (material_lists kollekció) ──
+    try {
+      await insertOne<MaterialListRecord>('material_lists', {
+        id,
+        created_at: new Date().toISOString(),
+        nev: nev.trim(),
+        telefon: telefon.trim(),
+        megjegyzes: megjegyzes?.trim() || null,
+        tetelek: safeTetelek,
+        statusz: 'uj',
+        forras: 'anyaglista_oldal',
+        kesz_at: null,
+      });
+      saved = true;
+    } catch {
+      /* tárolási hiba — megpróbáljuk az emailt */
     }
 
-    // ── 2. Email értesítés (a hiba NEM végzetes, ha a DB mentés sikerült) ──
+    // ── 2. Email értesítés (a hiba NEM végzetes, ha a mentés sikerült) ──
     const resendKey = process.env.RESEND_API_KEY;
     let emailSent = false;
     if (resendKey) {

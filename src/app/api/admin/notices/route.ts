@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { verifyAdminToken } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAll, insertOne, updateOne, deleteOne, isBlobConfigured } from '@/lib/blobStore';
+
+interface NoticeRecord {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  body: string;
+  href: string | null;
+  active: boolean;
+}
 
 function authed(request: Request): boolean {
   const auth = request.headers.get('authorization') ?? '';
   return verifyAdminToken(auth.startsWith('Bearer ') ? auth.slice(7) : '');
 }
 
-const NO_KEY = { error: 'Supabase szerver kulcs nincs beállítva (SUPABASE_SERVICE_ROLE_KEY).' };
+const NO_STORE = { error: 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).' };
 const MAX_BODY = 240;
 
 function isSafeHref(value: string): boolean {
@@ -23,21 +33,17 @@ function isSafeHref(value: string): boolean {
 
 export async function GET(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
-  const { data, error } = await sb
-    .from('site_notices')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ notices: data ?? [] });
+  const notices = (await getAll<NoticeRecord>('site_notices'))
+    .slice()
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return NextResponse.json({ notices });
 }
 
 export async function POST(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   const { body, href } = await request.json().catch(() => ({}));
   const text = typeof body === 'string' ? body.trim() : '';
@@ -50,24 +56,27 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'A link érvénytelen' }, { status: 400 });
   }
 
-  const { data, error } = await sb.from('site_notices').insert({
+  const now = new Date().toISOString();
+  const record: NoticeRecord = {
+    id: crypto.randomUUID(),
+    created_at: now,
+    updated_at: now,
     body: text,
     href: link || null,
     active: true,
-  }).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ notice: data });
+  };
+  await insertOne<NoticeRecord>('site_notices', record);
+  return NextResponse.json({ notice: record });
 }
 
 export async function PATCH(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   const { id, active, body, href } = await request.json().catch(() => ({}));
   if (!id) return NextResponse.json({ error: 'Hiányzó id' }, { status: 400 });
 
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const patch: Partial<NoticeRecord> = { updated_at: new Date().toISOString() };
   if (typeof active === 'boolean') patch.active = active;
   if (typeof body === 'string') {
     const text = body.trim();
@@ -81,20 +90,19 @@ export async function PATCH(request: Request) {
     patch.href = link || null;
   }
 
-  const { error } = await sb.from('site_notices').update(patch).eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const ok = await updateOne<NoticeRecord>('site_notices', id, patch);
+  if (!ok) return NextResponse.json({ error: 'Nem található' }, { status: 404 });
   return NextResponse.json({ success: true });
 }
 
 export async function DELETE(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Hiányzó id' }, { status: 400 });
 
-  const { error } = await sb.from('site_notices').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const ok = await deleteOne('site_notices', id);
+  if (!ok) return NextResponse.json({ error: 'Nem található' }, { status: 404 });
   return NextResponse.json({ success: true });
 }

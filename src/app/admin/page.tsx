@@ -118,7 +118,7 @@ function ChatTab() {
     try {
       const res = await fetch('/api/chat/threads', { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
-      if (res.status === 503) { const j = await res.json(); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (res.status === 503) { const j = await res.json(); setError(j.error ?? 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).'); return; }
       if (!res.ok) { setError('Nem sikerült betölteni a beszélgetéseket.'); return; }
       const { threads } = await res.json();
       setError(null);
@@ -606,7 +606,7 @@ function VipOffersTab() {
     try {
       const res = await fetch('/api/admin/vip-offers', { headers: { Authorization: `Bearer ${adminToken()}` } });
       if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
-      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).'); return; }
       if (!res.ok) { setError('Nem sikerült betölteni az ajánlatokat.'); return; }
       const { offers } = await res.json();
       setError(null);
@@ -822,10 +822,10 @@ function NoticesTab() {
     try {
       const res = await fetch('/api/admin/notices', { headers: { Authorization: `Bearer ${adminToken()}` } });
       if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
-      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).'); return; }
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j.error ?? 'Nem sikerült betölteni a híreket. Futtasd a site_notices SQL-t a Supabase-ben.');
+        setError(j.error ?? 'Nem sikerült betölteni a híreket.');
         return;
       }
       const { notices: rows } = await res.json();
@@ -1011,7 +1011,7 @@ function MaterialListsTab() {
     try {
       const res = await fetch('/api/admin/material-lists', { headers: { Authorization: `Bearer ${adminToken()}` } });
       if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
-      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).'); return; }
       if (!res.ok) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Nem sikerült betölteni.'); return; }
       const { lists: rows } = await res.json();
       setError(null);
@@ -1115,7 +1115,7 @@ function VipRequestsTab() {
     try {
       const res = await fetch('/api/admin/vip-requests', { headers: { Authorization: `Bearer ${adminToken()}` } });
       if (res.status === 401) { setError('A munkamenet lejárt — jelentkezz be újra.'); return; }
-      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Supabase szerver kulcs nincs beállítva.'); return; }
+      if (res.status === 503) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).'); return; }
       if (!res.ok) { const j = await res.json().catch(() => ({})); setError(j.error ?? 'Nem sikerült betölteni.'); return; }
       const { requests } = await res.json();
       setError(null);

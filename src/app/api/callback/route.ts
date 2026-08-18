@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { sanitizeForEmail } from '@/lib/security';
+import { insertOne } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
+
+interface CallbackRecord {
+  id: string;
+  created_at: string;
+  telefon: string;
+  nev: string | null;
+  preferred_time: string | null;
+  uzenet: string | null;
+  statusz: string;
+  called_at: string | null;
+  notes: string | null;
+}
 
 export async function POST(request: Request) {
   try {
@@ -16,25 +29,22 @@ export async function POST(request: Request) {
     const id = crypto.randomUUID();
     let saved = false;
 
-    // ── 1. Supabase mentés (callback_requests) ──
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-        const { error } = await supabase.from('callback_requests').insert({
-          id,
-          telefon: phone.trim(),
-          nev: name?.trim() || null,
-          preferred_time: preferred_time || null,
-          uzenet: message?.trim() || null,
-          statusz: 'uj',
-        });
-        if (!error) saved = true;
-      } catch {
-        /* DB hiba — email fallback */
-      }
+    // ── 1. Mentés (callback_requests kollekció) ──
+    try {
+      await insertOne<CallbackRecord>('callback_requests', {
+        id,
+        created_at: new Date().toISOString(),
+        telefon: phone.trim(),
+        nev: name?.trim() || null,
+        preferred_time: preferred_time || null,
+        uzenet: message?.trim() || null,
+        statusz: 'uj',
+        called_at: null,
+        notes: null,
+      });
+      saved = true;
+    } catch {
+      /* tárolási hiba — email fallback */
     }
 
     // ── 2. Email értesítés (nem végzetes hiba) ──

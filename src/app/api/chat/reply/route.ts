@@ -1,22 +1,38 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { verifyAdminToken } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { insertOne, updateOne, isBlobConfigured } from '@/lib/blobStore';
+
+interface ChatMessageRecord {
+  id: string;
+  chat_id: string;
+  sender: 'user' | 'admin';
+  content: string;
+  created_at: string;
+}
+
+interface ChatRecord {
+  id: string;
+  created_at: string;
+  nev: string | null;
+  telefon: string | null;
+  status: string;
+  last_message_at: string;
+}
 
 function bearer(request: Request): string {
   const auth = request.headers.get('authorization') ?? '';
   return auth.startsWith('Bearer ') ? auth.slice(7) : '';
 }
 
-// Admin válasz beszúrása sender='admin'-ként (service_role).
-// Ezt a látogató NEM tudja meghamisítani: az anon kulcs RLS-e csak sender='user'-t enged.
+// Admin válasz beszúrása sender='admin'-ként — csak admin-tokennel érhető el.
 export async function POST(request: Request) {
   if (!verifyAdminToken(bearer(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const sb = getSupabaseAdmin();
-  if (!sb) {
+  if (!isBlobConfigured()) {
     return NextResponse.json(
-      { error: 'Supabase szerver kulcs nincs beállítva (SUPABASE_SERVICE_ROLE_KEY).' },
+      { error: 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).' },
       { status: 503 },
     );
   }
@@ -34,15 +50,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Hiányzó chatId vagy üzenet' }, { status: 400 });
   }
 
-  const { data, error } = await sb
-    .from('chat_messages')
-    .insert({ chat_id: chatId, sender: 'admin', content })
-    .select()
-    .single();
+  const now = new Date().toISOString();
+  const message: ChatMessageRecord = {
+    id: crypto.randomUUID(),
+    chat_id: chatId,
+    sender: 'admin',
+    content,
+    created_at: now,
+  };
+  await insertOne<ChatMessageRecord>('chat_messages', message);
+  await updateOne<ChatRecord>('chats', chatId, { last_message_at: now });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  await sb.from('chats').update({ last_message_at: new Date().toISOString() }).eq('id', chatId);
-
-  return NextResponse.json({ message: data });
+  return NextResponse.json({ message });
 }

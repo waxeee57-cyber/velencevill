@@ -1,7 +1,5 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { trackEvent } from '@/utils/analytics';
 
 interface Message {
@@ -37,14 +35,21 @@ export default function ChatWidget() {
   }, [messages, step]);
 
   const loadMessages = useCallback(async (chatId: string) => {
-    const sb = getSupabaseBrowser();
-    if (!sb) return;
-    const { data } = await sb
-      .from('chat_messages')
-      .select('id, chat_id, sender, content, created_at')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true });
-    if (data) setMessages(data as Message[]);
+    try {
+      const res = await fetch(`/api/chat/messages?chatId=${encodeURIComponent(chatId)}`);
+      if (!res.ok) return;
+      const { messages } = await res.json();
+      if (Array.isArray(messages)) {
+        setMessages((prev) => {
+          const ids = new Set(prev.map((m) => m.id));
+          const merged = [...prev];
+          for (const m of messages as Message[]) if (!ids.has(m.id)) merged.push(m);
+          return merged.sort((a, b) => a.created_at.localeCompare(b.created_at));
+        });
+      }
+    } catch {
+      /* csendes hiba — a következő pollnál újra próbáljuk */
+    }
   }, []);
 
   // Visszatérő látogató: korábbi chat betöltése localStorage-ból
@@ -58,33 +63,12 @@ export default function ChatWidget() {
     }
   }, [loadMessages]);
 
-  // ── Realtime feliratkozás az admin (és saját) üzenetekre ──────────────────
+  // ── Rövid polling az admin (és saját) üzenetekre — Supabase Realtime helyett ──
   useEffect(() => {
     if (!session?.id) return;
-    const sb = getSupabaseBrowser();
-    if (!sb) return;
-
-    const channel: RealtimeChannel = sb
-      .channel(`chat_messages:${session.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `chat_id=eq.${session.id}`,
-        },
-        (payload) => {
-          const m = payload.new as Message;
-          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-        },
-      )
-      .subscribe();
-
-    return () => {
-      sb.removeChannel(channel);
-    };
-  }, [session?.id]);
+    const t = setInterval(() => loadMessages(session.id), 4000);
+    return () => clearInterval(t);
+  }, [session?.id, loadMessages]);
 
   const openWidget = () => {
     setPulse(false);
@@ -94,15 +78,19 @@ export default function ChatWidget() {
 
   const startChat = async () => {
     if (!form.nev || !form.telefon) return;
-    const sb = getSupabaseBrowser();
     const id =
       typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    if (sb) {
-      // A kliens generálja az id-t, így nincs szükség RETURNING-re (chats nem anon-olvasható).
-      await sb.from('chats').insert({ id, nev: form.nev, telefon: form.telefon, status: 'open' });
+    try {
+      await fetch('/api/chat/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, nev: form.nev, telefon: form.telefon }),
+      });
+    } catch {
+      /* graceful skip — a chat így is használható, csak admin oldalon nem jelenik meg fejléc nélkül */
     }
 
     localStorage.setItem(LS_ID, id);
@@ -119,19 +107,19 @@ export default function ChatWidget() {
     setInput('');
     trackEvent('chat_message');
 
-    const sb = getSupabaseBrowser();
-    if (sb) {
-      const { data } = await sb
-        .from('chat_messages')
-        .insert({ chat_id: session.id, sender: 'user', content: text })
-        .select()
-        .single();
-      if (data) {
-        const m = data as Message;
+    try {
+      const res = await fetch('/api/chat/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chatId: session.id, content: text }),
+      });
+      if (res.ok) {
+        const { message } = await res.json();
+        const m = message as Message;
         setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
       }
-      // last_message_at frissítés (best-effort; anon update tiltott -> elnyeljük)
-      sb.from('chats').update({ last_message_at: new Date().toISOString() }).eq('id', session.id).then(() => {});
+    } catch {
+      /* graceful skip — a poll úgyis visszahozza, ha mégis elment */
     }
 
     // Email értesítés a csapatnak (változatlan)

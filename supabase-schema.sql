@@ -1,5 +1,8 @@
--- Velence Vill Kft. — Supabase séma
--- Futtatás: Supabase Dashboard > SQL Editor
+-- Velence Vill Kft. — Supabase séma [DEPRECATED, 2026-08-18]
+-- A projekt teljes egészében Vercel Blob-alapú JSON-tárolásra állt át
+-- (lásd src/lib/blobStore.ts, CLAUDE.md). Ez a fájl NEM fut többé éles
+-- adatbázison — csak dokumentációként/referenciaként maradt meg, hogy a
+-- korábbi tábla-/mezőnevek visszakereshetők legyenek.
 
 CREATE TABLE IF NOT EXISTS leads (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

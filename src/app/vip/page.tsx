@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createClient } from '@supabase/supabase-js'
+import { getAll } from '@/lib/blobStore'
 import VipQuickRequestForm from '@/components/VipQuickRequestForm'
 
 export const metadata: Metadata = {
@@ -9,36 +9,26 @@ export const metadata: Metadata = {
 }
 
 // Mindig szerver-oldalon, kérésenként renderelődik — így az új VIP ajánlatok
-// újradeploy nélkül megjelennek, és a build sosem fut createClient-be.
+// újradeploy nélkül megjelennek.
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-function isValidHttpUrl(value?: string) {
-  if (!value) return false
-  try {
-    const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:'
-  } catch {
-    return false
-  }
+interface VipOfferRecord {
+  id: string
+  created_at: string
+  title: string
+  description?: string
+  valid_until?: string
+  file_url?: string
+  active: boolean
 }
 
 async function getVipOffers() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  // Csak valódi, http(s) URL esetén próbálunk csatlakozni — különben a
-  // createClient hibát dobna (pl. placeholder vagy hiányzó env változó).
-  if (!isValidHttpUrl(supabaseUrl) || !supabaseKey) {
-    return []
-  }
   try {
-    const supabase = createClient(supabaseUrl!, supabaseKey)
-    const { data } = await supabase
-      .from('vip_offers')
-      .select('*')
-      .eq('active', true)
-      .order('created_at', { ascending: false })
-    return data || []
+    const offers = await getAll<VipOfferRecord>('vip_offers')
+    return offers
+      .filter((o) => o.active)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
   } catch {
     return []
   }

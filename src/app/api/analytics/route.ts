@@ -9,7 +9,9 @@ interface AnalyticsEvent {
   referrer?: string;
 }
 
-// In-memory store — resets on server restart. TODO: replace with Supabase
+// In-memory store — resets on server restart / új deploy-nál. Alacsony
+// forgalomnál elfogadható; ha ez szűk keresztmetszet lenne, a blobStore
+// mintájára JSON-kollekcióba is kiválthatóvá válna.
 const events: AnalyticsEvent[] = [];
 
 const CTA_EVENTS = new Set([

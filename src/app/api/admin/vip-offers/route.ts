@@ -1,35 +1,40 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { verifyAdminToken } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAll, insertOne, updateOne, deleteOne, isBlobConfigured, uploadPublicFile } from '@/lib/blobStore';
+
+interface VipOfferRecord {
+  id: string;
+  created_at: string;
+  title: string;
+  description: string | null;
+  valid_until: string | null;
+  file_url: string | null;
+  active: boolean;
+}
 
 function authed(request: Request): boolean {
   const auth = request.headers.get('authorization') ?? '';
   return verifyAdminToken(auth.startsWith('Bearer ') ? auth.slice(7) : '');
 }
 
-const NO_KEY = { error: 'Supabase szerver kulcs nincs beállítva (SUPABASE_SERVICE_ROLE_KEY).' };
-const BUCKET = 'vip-files';
+const NO_STORE = { error: 'A tároló nincs beállítva (BLOB_READ_WRITE_TOKEN).' };
 
 // Összes ajánlat (aktív + inaktív) — admin nézet.
 export async function GET(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
-  const { data, error } = await sb
-    .from('vip_offers')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ offers: data ?? [] });
+  const offers = (await getAll<VipOfferRecord>('vip_offers'))
+    .slice()
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return NextResponse.json({ offers });
 }
 
-// Új ajánlat (multipart: title, description, valid_until, file?). A fájlt is
-// service_role tölti fel — anon nem írhat sem a táblába, sem a bucketbe.
+// Új ajánlat (multipart: title, description, valid_until, file?).
 export async function POST(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   let fd: FormData;
   try {
@@ -46,54 +51,53 @@ export async function POST(request: Request) {
   let file_url: string | null = null;
   const file = fd.get('file');
   if (file && file instanceof File && file.size > 0) {
-    const ext = file.name.split('.').pop() || 'bin';
-    const fileName = `vip-offers/${Date.now()}.${ext}`;
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const { error: upErr } = await sb.storage.from(BUCKET).upload(fileName, bytes, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: file.type || 'application/octet-stream',
-    });
-    if (upErr) return NextResponse.json({ error: `Fájl feltöltési hiba: ${upErr.message}` }, { status: 500 });
-    file_url = sb.storage.from(BUCKET).getPublicUrl(fileName).data.publicUrl;
+    try {
+      const ext = file.name.split('.').pop() || 'bin';
+      const fileName = `${Date.now()}.${ext}`;
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      file_url = await uploadPublicFile('vip-offers', fileName, bytes, file.type || 'application/octet-stream');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Fájl feltöltési hiba';
+      return NextResponse.json({ error: `Fájl feltöltési hiba: ${msg}` }, { status: 500 });
+    }
   }
 
-  const { data, error } = await sb.from('vip_offers').insert({
+  const record: VipOfferRecord = {
+    id: crypto.randomUUID(),
+    created_at: new Date().toISOString(),
     title,
     description: description || null,
     valid_until: valid_until || null,
     file_url,
     active: true,
-  }).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ offer: data });
+  };
+  await insertOne<VipOfferRecord>('vip_offers', record);
+  return NextResponse.json({ offer: record });
 }
 
 // Aktív/inaktív váltás.
 export async function PATCH(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   const { id, active } = await request.json().catch(() => ({}));
   if (!id || typeof active !== 'boolean') {
     return NextResponse.json({ error: 'Hiányzó id vagy active' }, { status: 400 });
   }
-  const { error } = await sb.from('vip_offers').update({ active }).eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const ok = await updateOne<VipOfferRecord>('vip_offers', id, { active });
+  if (!ok) return NextResponse.json({ error: 'Nem található' }, { status: 404 });
   return NextResponse.json({ success: true });
 }
 
 // Törlés.
 export async function DELETE(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const sb = getSupabaseAdmin();
-  if (!sb) return NextResponse.json(NO_KEY, { status: 503 });
+  if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Hiányzó id' }, { status: 400 });
 
-  const { error } = await sb.from('vip_offers').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const ok = await deleteOne('vip_offers', id);
+  if (!ok) return NextResponse.json({ error: 'Nem található' }, { status: 404 });
   return NextResponse.json({ success: true });
 }

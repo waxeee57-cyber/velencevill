@@ -1,21 +1,29 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { sanitizeForEmail } from '@/lib/security';
+import { insertOne, isBlobConfigured, uploadPublicFile } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
-const BUCKET = 'vip-files';
 const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB
 const ALLOWED_IMAGE = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const ALLOWED_AUDIO = ['audio/mpeg', 'audio/mp4', 'audio/webm', 'audio/ogg', 'audio/wav', 'audio/x-m4a', 'audio/aac'];
 
-// Publikus végpont (nincs admin token) — a VIP oldalról bárki elérheti,
-// aki ismeri az URL-t. A tábla RLS-e service_role-only (nincs anon policy),
-// ezért a fájlfeltöltés és a beszúrás is emelt jogosultsággal, itt a
-// szerveren történik — anon kulcs sosem érinti a vip-files bucketet.
+interface VipRequestRecord {
+  id: string;
+  created_at: string;
+  nev: string;
+  telefon: string;
+  uzenet: string | null;
+  kep_url: string | null;
+  hang_url: string | null;
+  statusz: string;
+}
+
+// Publikus végpont (nincs admin token) — a VIP oldalról bárki elérheti, aki
+// ismeri az URL-t. A tárolás (JSON kollekció + fájlok) csak szerver-oldalon,
+// a BLOB_READ_WRITE_TOKEN-nel történik — kliens sosem éri el közvetlenül.
 export async function POST(request: Request) {
-  const sb = getSupabaseAdmin();
-  if (!sb) {
+  if (!isBlobConfigured()) {
     return NextResponse.json({ error: 'Szerver konfigurációs hiba — hívjon minket közvetlenül.' }, { status: 503 });
   }
 
@@ -39,15 +47,9 @@ export async function POST(request: Request) {
     if (file.size > MAX_FILE_BYTES) throw new Error(`A(z) ${field === 'kep' ? 'fotó' : 'hangüzenet'} túl nagy (max 15 MB).`);
     if (file.type && !allowed.includes(file.type)) throw new Error(`Nem támogatott fájltípus: ${file.type}`);
     const ext = file.name.split('.').pop() || 'bin';
-    const fileName = `vip-requests/${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+    const fileName = `${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const { error } = await sb!.storage.from(BUCKET).upload(fileName, bytes, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: file.type || 'application/octet-stream',
-    });
-    if (error) throw new Error(`Fájlfeltöltési hiba: ${error.message}`);
-    return sb!.storage.from(BUCKET).getPublicUrl(fileName).data.publicUrl;
+    return uploadPublicFile('vip-requests', fileName, bytes, file.type || 'application/octet-stream');
   }
 
   let kep_url: string | null = null;
@@ -60,10 +62,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  const { data, error } = await sb.from('vip_requests').insert({
+  const id = crypto.randomUUID();
+  const record: VipRequestRecord = {
+    id,
+    created_at: new Date().toISOString(),
     nev, telefon, uzenet: uzenet || null, kep_url, hang_url, statusz: 'uj',
-  }).select().single();
-  if (error) {
+  };
+  try {
+    await insertOne<VipRequestRecord>('vip_requests', record);
+  } catch {
     return NextResponse.json({ error: `Nem sikerült rögzíteni a kérést. Kérjük hívjon közvetlenül: ${PHONE}` }, { status: 500 });
   }
 
@@ -87,13 +94,13 @@ export async function POST(request: Request) {
           <p><strong>Üzenet:</strong> ${safe.note}</p>
           ${kep_url ? `<p><strong>Fotó:</strong> <a href="${kep_url}">${kep_url}</a></p>` : ''}
           ${hang_url ? `<p><strong>Hangüzenet:</strong> <a href="${hang_url}">${hang_url}</a></p>` : ''}
-          <hr><p><small>Admin azonosító: ${data.id}</small></p>
+          <hr><p><small>Admin azonosító: ${id}</small></p>
         `,
       });
     } catch {
-      /* email hiba elnyelve — a DB mentés már megtörtént */
+      /* email hiba elnyelve — a mentés már megtörtént */
     }
   }
 
-  return NextResponse.json({ success: true, id: data.id });
+  return NextResponse.json({ success: true, id });
 }
