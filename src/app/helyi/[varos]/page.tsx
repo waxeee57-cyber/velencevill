@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import ContactForm from '@/components/sections/ContactForm';
 import CityCards from './CityCards';
 import { CITIES } from '../cities';
+import { SITE_URL } from '@/lib/site';
 
 interface Props {
   params: { varos: string };
@@ -18,10 +19,14 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: Props): Metadata {
   const city = CITIES.find(c => c.slug === params.varos);
   if (!city) return {};
+  const title = `Villanyszerelési anyag ${city.name} — Velence Vill Kft.`;
+  const description = `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. 10+ vezető márka: Legrand, Schneider Electric, Tracon, EGLO. ${city.leiras}.`;
   return {
-    title: `Villanyszerelési anyag ${city.name} — Velence Vill Kft.`,
-    description: `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. 10+ vezető márka: Legrand, Schneider Electric, Tracon, EGLO. ${city.leiras}.`,
+    title,
+    description,
     keywords: [`villanyszerelési anyag ${city.name}`, `villamos szaküzlet ${city.name}`, 'Velence Vill', 'villanyszerelő Fejér megye'],
+    alternates: { canonical: `/helyi/${city.slug}` },
+    openGraph: { title, description, url: `/helyi/${city.slug}`, type: 'website' },
   };
 }
 
@@ -34,7 +39,7 @@ export default function VarosPage({ params }: Props) {
     '@type': ['LocalBusiness', 'ElectricalSupplyStore'],
     name: 'Velence Vill Kft.',
     description: `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. ${city.leiras}.`,
-    url: `https://velencevill.hu/helyi/${city.slug}`,
+    url: `${SITE_URL}/helyi/${city.slug}`,
     telephone: '+36306182165',
     address: {
       '@type': 'PostalAddress',
@@ -51,9 +56,20 @@ export default function VarosPage({ params }: Props) {
     areaServed: city.name,
   };
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Főoldal', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Helyi kiszolgálás', item: `${SITE_URL}/helyi` },
+      { '@type': 'ListItem', position: 3, name: city.name, item: `${SITE_URL}/helyi/${city.slug}` },
+    ],
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <Navbar />
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem' }}>

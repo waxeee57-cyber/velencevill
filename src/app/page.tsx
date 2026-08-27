@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/sections/Hero';
@@ -13,6 +14,10 @@ import ChatWidget from '@/components/ChatWidget';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import CallbackButton from '@/components/CallbackButton';
 import ProSection from '@/components/sections/ProSection';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 const TICKER_BRANDS = [
   'Legrand', 'Schneider Electric', 'Tracon Electric', 'EGLO', 'Rábalux',

@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: 'ÁSZF | Velence Vill Kft.',
   description: 'Velence Vill Kft. általános tájékoztatója az üzlet működéséről és az ajánlatkérés feltételeiről.',
+  alternates: { canonical: '/aszf' },
 };
 
 const sectionTitle: React.CSSProperties = { fontSize: 18, fontWeight: 700, color: '#fff', margin: '28px 0 10px' };

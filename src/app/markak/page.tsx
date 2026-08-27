@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Márkák — Velence Vill Kft.',
   description: '13 vezető villanyszerelési gyártó egy helyen: Legrand, Schneider Electric, Tracon, EGLO, Rábalux, Kanlux és más márkák forgalmazója Velencén.',
   keywords: ['Legrand', 'Schneider Electric', 'Tracon', 'EGLO', 'Rábalux', 'villanyszerelési márkák', 'forgalmazó Velence'],
+  alternates: { canonical: '/markak' },
 };
 
 export default function MarkakPage() {

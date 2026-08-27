@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: 'Cookie tájékoztató | Velence Vill Kft.',
   description: 'Tájékoztató a Velence Vill Kft. weboldalán használt sütikről és böngészőben tárolt adatokról.',
+  alternates: { canonical: '/cookie-tajekoztato' },
 };
 
 const sectionTitle: React.CSSProperties = { fontSize: 18, fontWeight: 700, color: '#fff', margin: '28px 0 10px' };

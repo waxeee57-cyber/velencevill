@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Tudástár — Szakmai segédanyagok villanyszerelőknek és barkácsolóknak',
   description: 'Ingyenes szakmai cikkek és útmutatók villanyszerelőknek és otthoni barkácsolóknak: kábelméretezés, FI relé, EV töltő telepítés, okos otthon és még sok más.',
   keywords: ['villanyszerelési útmutató', 'kábelméretezés', 'FI relé', 'EV töltő telepítés', 'villanyszerelési tippek', 'okos otthon', 'LED világítás'],
+  alternates: { canonical: '/tudastar' },
 };
 
 export default function TudasTarPage() {

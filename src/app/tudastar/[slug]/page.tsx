@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ARTICLES, CATEGORY_LABELS } from '../articles';
+import { SITE_URL } from '@/lib/site';
 
 interface Props {
   params: { slug: string };
@@ -34,8 +35,41 @@ export default function ArticlePage({ params }: Props) {
   const article = ARTICLES.find(a => a.slug === params.slug);
   if (!article) notFound();
 
+  const url = `${SITE_URL}/tudastar/${article.slug}`;
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.description,
+    datePublished: article.publishDate,
+    dateModified: article.publishDate,
+    inLanguage: 'hu-HU',
+    mainEntityOfPage: url,
+    author: { '@type': 'Organization', name: 'Velence Vill Kft.', url: SITE_URL },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Velence Vill Kft.',
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png` },
+    },
+  };
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Főoldal', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Tudástár', item: `${SITE_URL}/tudastar` },
+      { '@type': 'ListItem', position: 3, name: article.title, item: url },
+    ],
+  };
+
   return (
     <>
+      {!article.draft && (
+        <>
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+        </>
+      )}
       <Navbar />
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 2rem' }}>

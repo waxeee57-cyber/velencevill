@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Termékek — Velence Vill Kft.',
   description: 'Villanyszerelési termékek kereshető katalógusa: kábelek, kapcsolók, elosztók, világítástechnika, szerelési anyagok és szerszámok. Elérhetőségi jelzéssel, azonnali anyaglista-küldéssel.',
   keywords: ['villanyszerelési termékek', 'kábelek', 'kapcsolók', 'elosztók', 'világítástechnika', 'villanyszerelési anyagok Velence'],
+  alternates: { canonical: '/termekek' },
 };
 
 export default function TermekekPage() {

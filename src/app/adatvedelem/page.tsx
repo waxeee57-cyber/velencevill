@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 export const metadata: Metadata = {
   title: 'Adatvédelmi tájékoztató | Velence Vill Kft.',
   description: 'Velence Vill Kft. adatvédelmi tájékoztatója — milyen személyes adatokat kezelünk, milyen célból és milyen jogalapon.',
+  alternates: { canonical: '/adatvedelem' },
 };
 
 const sectionTitle: React.CSSProperties = { fontSize: 18, fontWeight: 700, color: '#fff', margin: '28px 0 10px' };
