@@ -1,4 +1,5 @@
 'use client';
+import HeroNews from '@/components/HeroNews';
 
 const SCHEDULE = [
   { day: 'Hétfő',     from: 8, to: 16 },
@@ -54,6 +55,8 @@ export default function Hero() {
         <p style={{ fontSize:15, color:'#8899aa', lineHeight:1.7, marginBottom:'2rem', maxWidth:420, marginLeft:'auto', marginRight:'auto' }}>
           10+ vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
+
+        <HeroNews />
 
         {/* Persona fork */}
         <div style={{ marginBottom:'1.5rem' }}>
