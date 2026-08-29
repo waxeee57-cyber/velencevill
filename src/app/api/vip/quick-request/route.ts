@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { sanitizeForEmail } from '@/lib/security';
+import { sanitizeForEmail, allowRequest, rateLimited } from '@/lib/security';
 import { insertOne, isBlobConfigured, uploadPublicFile } from '@/lib/blobStore';
+import { SITE_URL } from '@/lib/site';
 
 const PHONE = '+36 30 618 2165';
 const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB
@@ -23,6 +24,7 @@ interface VipRequestRecord {
 // ismeri az URL-t. A tárolás (JSON kollekció + fájlok) csak szerver-oldalon,
 // a BLOB_READ_WRITE_TOKEN-nel történik — kliens sosem éri el közvetlenül.
 export async function POST(request: Request) {
+  if (!allowRequest(request, 'public-form', 8, 10 * 60 * 1000)) return rateLimited();
   if (!isBlobConfigured()) {
     return NextResponse.json({ error: 'Szerver konfigurációs hiba — hívjon minket közvetlenül.' }, { status: 503 });
   }
@@ -92,8 +94,8 @@ export async function POST(request: Request) {
           <p><strong>Név:</strong> ${safe.name}</p>
           <p><strong>Telefon:</strong> ${safe.phone}</p>
           <p><strong>Üzenet:</strong> ${safe.note}</p>
-          ${kep_url ? `<p><strong>Fotó:</strong> <a href="${kep_url}">${kep_url}</a></p>` : ''}
-          ${hang_url ? `<p><strong>Hangüzenet:</strong> <a href="${hang_url}">${hang_url}</a></p>` : ''}
+          ${kep_url ? `<p><strong>Fotó:</strong> <a href="${kep_url.startsWith('http') ? kep_url : `${SITE_URL}${kep_url}`}">${kep_url}</a></p>` : ''}
+          ${hang_url ? `<p><strong>Hangüzenet:</strong> <a href="${hang_url.startsWith('http') ? hang_url : `${SITE_URL}${hang_url}`}">${hang_url}</a></p>` : ''}
           <hr><p><small>Admin azonosító: ${id}</small></p>
         `,
       });

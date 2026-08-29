@@ -20,6 +20,8 @@ interface MaterialListRecord {
   statusz: string;
   forras: string;
   kesz_at: string | null;
+  valasz?: string | null;
+  valasz_at?: string | null;
 }
 
 function authed(request: Request): boolean {
@@ -46,13 +48,19 @@ export async function PATCH(request: Request) {
   if (!authed(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!isBlobConfigured()) return NextResponse.json(NO_STORE, { status: 503 });
 
-  const { id, statusz } = await request.json().catch(() => ({}));
+  const { id, statusz, valasz } = await request.json().catch(() => ({}));
   if (!id) return NextResponse.json({ error: 'Hiányzó id' }, { status: 400 });
 
   const updates: Partial<MaterialListRecord> = {};
   if (typeof statusz === 'string') {
     updates.statusz = statusz;
     if (statusz === 'kesz') updates.kesz_at = new Date().toISOString();
+  }
+  if (typeof valasz === 'string') {
+    const trimmed = valasz.trim().slice(0, 500);
+    if (!trimmed) return NextResponse.json({ error: 'Üres üzenet' }, { status: 400 });
+    updates.valasz = trimmed;
+    updates.valasz_at = new Date().toISOString();
   }
   if (Object.keys(updates).length === 0) return NextResponse.json({ error: 'Nincs módosítandó mező' }, { status: 400 });
 

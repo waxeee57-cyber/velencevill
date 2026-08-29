@@ -19,6 +19,37 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Mikor van nyitva a Velence Vill szaküzlet?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Hétfőtől péntekig 8:00-16:00, szombaton 8:00-12:00, vasárnap zárva.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Milyen márkákat forgalmaz a Velence Vill Kft.?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '10+ vezető márkát: Tracon, Schneider Electric, Legrand, Kanlux, Rábalux, EGLO, GLOBO, EMOS, KOPP, OBO, Csatári Plast, Famatel, Mentavill.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Hol található a Velence Vill szaküzlet?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Velence, Fecske utca 12., 2481. Google Maps: https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence — Waze: https://waze.com/ul?q=Fecske+utca+12+Velence&navigate=yes',
+      },
+    },
+  ],
+};
+
 const TICKER_BRANDS = [
   'Legrand', 'Schneider Electric', 'Tracon Electric', 'EGLO', 'Rábalux',
   'Csatári Plast', 'OBO', 'Kanlux', 'EMOS', 'Famatel', 'GLOBO', 'KOPP', 'Mentavill',
@@ -27,6 +58,7 @@ const TICKER_BRANDS = [
 export default function HomePage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar />
       <main>
         <Hero />
@@ -44,7 +76,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div id="termekek"><Products /></div>
+        <Products />
         <ProSection />
         <Brands />
         <Reviews />

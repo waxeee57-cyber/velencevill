@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { insertOne, isBlobConfigured } from '@/lib/blobStore';
+import { allowRequest, rateLimited } from '@/lib/security';
 
 interface ChatRecord {
   id: string;
@@ -13,6 +14,7 @@ interface ChatRecord {
 // Publikus végpont — a látogató indít egy chat-fejet (id-t a kliens generálja,
 // hogy ne kelljen admin-jogosultság a visszaolvasáshoz).
 export async function POST(request: Request) {
+  if (!allowRequest(request, 'public-form', 8, 10 * 60 * 1000)) return rateLimited();
   if (!isBlobConfigured()) return NextResponse.json({ ok: false }, { status: 503 });
 
   const { id, nev, telefon } = await request.json().catch(() => ({}));

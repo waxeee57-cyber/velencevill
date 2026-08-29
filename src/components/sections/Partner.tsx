@@ -8,14 +8,14 @@ export default function Partner() {
         <h2 style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', marginBottom: 6 }}>Megbízható villanyszerelőt keres?</h2>
         <p style={{ fontSize: 14, color: '#8899aa', marginBottom: 32 }}>Ajánlott partnerünk vállalja a kivitelezést — mi biztosítjuk az anyagot.</p>
         <div
-          style={{ background: 'rgba(13,31,60,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, padding: '1.5rem 1.75rem', display: 'flex', gap: 20, alignItems: 'flex-start', maxWidth: 560, transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d' }}
+          style={{ background: 'rgba(13,31,60,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 16, padding: '1.5rem 1.75rem', display: 'flex', gap: 20, alignItems: 'flex-start', maxWidth: 560, transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease' }}
           onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-8px) rotateX(4deg) scale(1.02)';
+            e.currentTarget.style.transform = 'translateY(-6px)';
             e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15)';
             e.currentTarget.style.borderColor = 'rgba(0,255,239,0.4)';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.transform = 'translateY(0) rotateX(0) scale(1)';
+            e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = 'none';
             e.currentTarget.style.borderColor = 'rgba(0,255,239,0.15)';
           }}>

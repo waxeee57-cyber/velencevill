@@ -88,8 +88,9 @@ function LoginForm({ onAuth }: { onAuth: () => void }) {
           <span style={{ color: '#fff', fontWeight: 600, fontSize: 15 }}>Admin belépés</span>
         </div>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ fontSize: 12, color: '#8899aa', display: 'block', marginBottom: 4 }}>Jelszó</label>
+          <label htmlFor="admin-password" style={{ fontSize: 12, color: '#8899aa', display: 'block', marginBottom: 4 }}>Jelszó</label>
           <input
+            id="admin-password"
             type="password" value={pw} onChange={e => setPw(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}
             style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
@@ -229,7 +230,10 @@ function AnalyticsTab() {
   const [data, setData] = useState<AnalyticsData | null>(null);
 
   useEffect(() => {
-    fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {});
+    fetch('/api/analytics', { headers: { Authorization: `Bearer ${adminToken()}` } })
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then(setData)
+      .catch(() => {});
   }, []);
 
   if (!data) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
@@ -333,7 +337,10 @@ function KerdoivTab() {
   const [data, setData] = useState<AnalyticsData | null>(null);
 
   useEffect(() => {
-    fetch('/api/analytics').then(r => r.json()).then(setData).catch(() => {});
+    fetch('/api/analytics', { headers: { Authorization: `Bearer ${adminToken()}` } })
+      .then(r => (r.ok ? r.json() : Promise.reject()))
+      .then(setData)
+      .catch(() => {});
   }, []);
 
   if (!data) return <p style={{ color: '#8899aa', fontSize: 14 }}>Betöltés...</p>;
@@ -806,9 +813,26 @@ interface SiteNotice {
   id: string;
   body: string;
   href?: string | null;
+  image_url?: string | null;
   active: boolean;
   created_at: string;
 }
+
+const noticeField: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box', background: '#060d18',
+  border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8,
+  padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none',
+};
+const noticeFile: React.CSSProperties = {
+  ...noticeField, padding: '8px 10px', color: '#8899aa', fontSize: 13, cursor: 'pointer',
+};
+const noticeBtn: React.CSSProperties = {
+  fontSize: 12, padding: '5px 10px', borderRadius: 6, background: 'transparent', cursor: 'pointer',
+};
+const noticePreview: React.CSSProperties = {
+  maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto',
+  objectFit: 'contain', borderRadius: 8, border: '1px solid rgba(0,255,239,0.2)', display: 'block',
+};
 
 function NoticesTab() {
   const [notices, setNotices] = useState<SiteNotice[]>([]);
@@ -817,6 +841,15 @@ function NoticesTab() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ body: '', href: '' });
+  const [createPreview, setCreatePreview] = useState<string | null>(null);
+  const createFileRef = useRef<HTMLInputElement>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ body: '', href: '' });
+  const [editPreview, setEditPreview] = useState<string | null>(null);
+  const [existingImage, setExistingImage] = useState<string | null>(null);
+  const [editRemoveImage, setEditRemoveImage] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const editFileRef = useRef<HTMLInputElement>(null);
 
   const fetchNotices = useCallback(async () => {
     try {
@@ -840,26 +873,146 @@ function NoticesTab() {
 
   useEffect(() => { fetchNotices(); }, [fetchNotices]);
 
+  useEffect(() => {
+    return () => {
+      if (createPreview?.startsWith('blob:')) URL.revokeObjectURL(createPreview);
+    };
+  }, [createPreview]);
+
+  useEffect(() => {
+    return () => {
+      if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    };
+  }, [editPreview]);
+
+  function onCreateFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (createPreview?.startsWith('blob:')) URL.revokeObjectURL(createPreview);
+    setCreatePreview(file ? URL.createObjectURL(file) : null);
+  }
+
+  function onEditFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    setEditRemoveImage(false);
+    setEditPreview(file ? URL.createObjectURL(file) : null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.body.trim()) { setToast({ message: 'A hír szövege kötelező', type: 'error' }); return; }
     setSubmitting(true);
     try {
+      const fd = new FormData();
+      fd.append('body', form.body.trim());
+      fd.append('href', form.href.trim());
+      const file = createFileRef.current?.files?.[0];
+      if (file) fd.append('image', file);
       const res = await fetch('/api/admin/notices', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
-        body: JSON.stringify({ body: form.body.trim(), href: form.href.trim() }),
+        headers: { Authorization: `Bearer ${adminToken()}` },
+        body: fd,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Mentés sikertelen');
       setToast({ message: 'Hír kint van a fejlécben.', type: 'success' });
       setForm({ body: '', href: '' });
+      if (createPreview?.startsWith('blob:')) URL.revokeObjectURL(createPreview);
+      setCreatePreview(null);
+      if (createFileRef.current) createFileRef.current.value = '';
       fetchNotices();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Ismeretlen hiba';
       setToast({ message: `Hiba: ${msg}`, type: 'error' });
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function openEdit(n: SiteNotice) {
+    if (editingId === n.id) {
+      closeEdit();
+      return;
+    }
+    if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    setEditingId(n.id);
+    setEditForm({ body: n.body, href: n.href ?? '' });
+    setExistingImage(n.image_url ?? null);
+    setEditPreview(null);
+    setEditRemoveImage(false);
+    if (editFileRef.current) editFileRef.current.value = '';
+  }
+
+  function closeEdit() {
+    if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    setEditingId(null);
+    setEditPreview(null);
+    setExistingImage(null);
+    setEditRemoveImage(false);
+    if (editFileRef.current) editFileRef.current.value = '';
+  }
+
+  function clearAttachedImage() {
+    if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    setEditPreview(null);
+    setExistingImage(null);
+    setEditRemoveImage(true);
+    if (editFileRef.current) editFileRef.current.value = '';
+  }
+
+  function cancelNewFile() {
+    if (editPreview?.startsWith('blob:')) URL.revokeObjectURL(editPreview);
+    setEditPreview(null);
+    if (editFileRef.current) editFileRef.current.value = '';
+  }
+
+  async function deleteAttachedImage(id: string) {
+    setEditSaving(true);
+    try {
+      const res = await fetch('/api/admin/notices', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
+        body: JSON.stringify({ id, image_url: null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'A kép törlése nem sikerült.');
+      clearAttachedImage();
+      setToast({ message: 'Kép törölve.', type: 'success' });
+      fetchNotices();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ismeretlen hiba';
+      setToast({ message: `Hiba: ${msg}`, type: 'error' });
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function saveEdit(id: string) {
+    if (!editForm.body.trim()) { setToast({ message: 'A hír szövege kötelező', type: 'error' }); return; }
+    setEditSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append('id', id);
+      fd.append('body', editForm.body.trim());
+      fd.append('href', editForm.href.trim());
+      if (editRemoveImage) fd.append('remove_image', 'true');
+      const file = editFileRef.current?.files?.[0];
+      if (file) fd.append('image', file);
+      const res = await fetch('/api/admin/notices', {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${adminToken()}` },
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Mentés sikertelen');
+      setToast({ message: 'Hír frissítve.', type: 'success' });
+      closeEdit();
+      fetchNotices();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ismeretlen hiba';
+      setToast({ message: `Hiba: ${msg}`, type: 'error' });
+    } finally {
+      setEditSaving(false);
     }
   }
 
@@ -874,6 +1027,7 @@ function NoticesTab() {
 
   async function deleteNotice(id: string) {
     if (!confirm('Törlöd ezt a hírt a fejlécből?')) return;
+    if (editingId === id) closeEdit();
     await fetch(`/api/admin/notices?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken()}` } });
     fetchNotices();
   }
@@ -898,22 +1052,53 @@ function NoticesTab() {
               onChange={(e) => setForm({ ...form, body: e.target.value })}
               placeholder="pl. Ma 16-ig nyitva · beérkezett NYM 3×2,5"
               disabled={submitting}
-              style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+              style={noticeField}
             />
             <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{form.body.length}/240</p>
           </div>
-          <div>
-            <label htmlFor="notice-href" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Link (opcionális)</label>
-            <input
-              id="notice-href"
-              type="text"
-              value={form.href}
-              onChange={(e) => setForm({ ...form, href: e.target.value })}
-              placeholder="pl. /termekek vagy tel:+36306182165"
-              disabled={submitting}
-              style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            <div>
+              <label htmlFor="notice-href" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Link (opcionális)</label>
+              <input
+                id="notice-href"
+                type="text"
+                value={form.href}
+                onChange={(e) => setForm({ ...form, href: e.target.value })}
+                placeholder="pl. /termekek vagy tel:+36306182165"
+                disabled={submitting}
+                style={noticeField}
+              />
+            </div>
+            <div>
+              <label htmlFor="notice-image" style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Kép (opcionális)</label>
+              <input
+                id="notice-image"
+                type="file"
+                ref={createFileRef}
+                accept=".jpg,.jpeg,.png,.webp"
+                disabled={submitting}
+                onChange={onCreateFile}
+                style={noticeFile}
+              />
+            </div>
           </div>
+          {createPreview && (
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
+              <img src={createPreview} alt="" style={noticePreview} />
+              <button
+                type="button"
+                onClick={() => {
+                  if (createPreview.startsWith('blob:')) URL.revokeObjectURL(createPreview);
+                  setCreatePreview(null);
+                  if (createFileRef.current) createFileRef.current.value = '';
+                }}
+                disabled={submitting}
+                style={{ ...noticeBtn, border: '1px solid rgba(136,153,170,0.35)', color: '#8899aa', minHeight: 44 }}
+              >
+                Kép törlése
+              </button>
+            </div>
+          )}
           <button
             type="submit"
             disabled={submitting}
@@ -939,36 +1124,132 @@ function NoticesTab() {
                 className="glass-card"
                 style={{ padding: '1rem', opacity: n.active ? 1 : 0.5, borderColor: n.active ? 'rgba(0,255,239,0.2)' : 'rgba(100,100,100,0.2)' }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{n.body}</span>
-                      <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: n.active ? 'rgba(34,197,94,0.15)' : 'rgba(100,100,100,0.15)', color: n.active ? '#22c55e' : '#8899aa' }}>
-                        {n.active ? 'Kint' : 'Levéve'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#475569' }}>
-                      <span>{new Date(n.created_at).toLocaleString('hu-HU')}</span>
-                      {n.href && <span>{n.href}</span>}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: 180, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    {n.image_url && (
+                      <img src={n.image_url} alt="" width={56} height={56} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '1px solid rgba(0,255,239,0.2)', flexShrink: 0 }} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{n.body}</span>
+                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: n.active ? 'rgba(34,197,94,0.15)' : 'rgba(100,100,100,0.15)', color: n.active ? '#22c55e' : '#8899aa' }}>
+                          {n.active ? 'Kint' : 'Levéve'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#475569', flexWrap: 'wrap' }}>
+                        <span>{new Date(n.created_at).toLocaleString('hu-HU')}</span>
+                        {n.href && <span>{n.href}</span>}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(n)}
+                      style={{ ...noticeBtn, border: '1px solid rgba(0,255,239,0.35)', color: '#00FFEF' }}
+                    >
+                      {editingId === n.id ? 'Bezár' : 'Szerkesztés'}
+                    </button>
                     <button
                       type="button"
                       onClick={() => toggleActive(n.id, n.active)}
-                      style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(0,255,239,0.2)', background: 'transparent', color: '#8899aa', cursor: 'pointer' }}
+                      style={{ ...noticeBtn, border: '1px solid rgba(0,255,239,0.2)', color: '#8899aa' }}
                     >
                       {n.active ? 'Leveszem' : 'Kirakom'}
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteNotice(n.id)}
-                      style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                      style={{ ...noticeBtn, border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}
                     >
                       Töröl
                     </button>
                   </div>
                 </div>
+                {editingId === n.id && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(0,255,239,0.12)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div>
+                      <label htmlFor={`notice-edit-body-${n.id}`} style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Szöveg *</label>
+                      <input
+                        id={`notice-edit-body-${n.id}`}
+                        type="text"
+                        maxLength={240}
+                        value={editForm.body}
+                        onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
+                        disabled={editSaving}
+                        style={noticeField}
+                      />
+                      <p style={{ fontSize: 11, color: '#475569', marginTop: 4 }}>{editForm.body.length}/240</p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                      <div>
+                        <label htmlFor={`notice-edit-href-${n.id}`} style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Link (opcionális)</label>
+                        <input
+                          id={`notice-edit-href-${n.id}`}
+                          type="text"
+                          value={editForm.href}
+                          onChange={(e) => setEditForm({ ...editForm, href: e.target.value })}
+                          disabled={editSaving}
+                          style={noticeField}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`notice-edit-image-${n.id}`} style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 4 }}>Kép cseréje</label>
+                        <input
+                          id={`notice-edit-image-${n.id}`}
+                          type="file"
+                          ref={editFileRef}
+                          accept=".jpg,.jpeg,.png,.webp"
+                          disabled={editSaving}
+                          onChange={onEditFile}
+                          style={noticeFile}
+                        />
+                      </div>
+                    </div>
+                    {(editPreview || (existingImage && !editRemoveImage)) && (
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
+                        <img
+                          src={editPreview || existingImage || ''}
+                          alt=""
+                          style={{ ...noticePreview, maxHeight: 220 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editPreview) {
+                              cancelNewFile();
+                              return;
+                            }
+                            void deleteAttachedImage(n.id);
+                          }}
+                          disabled={editSaving}
+                          style={{ ...noticeBtn, border: '1px solid rgba(239,68,68,0.35)', color: '#ef4444', minHeight: 44 }}
+                        >
+                          Kép törlése
+                        </button>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => saveEdit(n.id)}
+                        disabled={editSaving}
+                        className="btn-primary"
+                        style={{ justifyContent: 'center', padding: '10px 18px', minHeight: 44, opacity: editSaving ? 0.5 : 1 }}
+                      >
+                        {editSaving ? 'Mentés...' : 'Mentés'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={closeEdit}
+                        disabled={editSaving}
+                        style={{ ...noticeBtn, border: '1px solid rgba(136,153,170,0.35)', color: '#8899aa', minHeight: 44, padding: '10px 18px' }}
+                      >
+                        Mégse
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -987,6 +1268,18 @@ interface MaterialListItem { id: string; nev: string; kategoria?: string; marka?
 interface MaterialList {
   id: string; created_at: string; nev: string; telefon: string; megjegyzes?: string | null;
   tetelek: MaterialListItem[]; statusz: string; forras?: string | null; kesz_at?: string | null;
+  valasz?: string | null; valasz_at?: string | null;
+}
+
+function smsComposeHref(phone: string, body: string): string {
+  const digits = phone.replace(/\D/g, '');
+  let n = digits;
+  if (n.startsWith('00')) n = n.slice(2);
+  if (n.startsWith('06')) n = '36' + n.slice(2);
+  if (!n.startsWith('36') && n.length >= 8) n = '36' + n.replace(/^0+/, '');
+  const encoded = encodeURIComponent(body);
+  const isIos = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  return isIos ? `sms:+${n}&body=${encoded}` : `sms:+${n}?body=${encoded}`;
 }
 
 const ML_STATUS_LABEL: Record<string, string> = {
@@ -1006,6 +1299,10 @@ function MaterialListsTab() {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'uj' | 'osszekeszitve' | 'kesz' | 'all'>('uj');
+  const [replyFor, setReplyFor] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [replySending, setReplySending] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
 
   const fetchLists = useCallback(async () => {
     try {
@@ -1041,6 +1338,58 @@ function MaterialListsTab() {
     if (!confirm('Biztosan törli ezt az anyaglistát?')) return;
     await fetch(`/api/admin/material-lists?id=${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken()}` } });
     fetchLists();
+  }
+
+  function openReply(list: MaterialList) {
+    if (replyFor === list.id) {
+      setReplyFor(null);
+      setReplyError(null);
+      return;
+    }
+    setReplyFor(list.id);
+    setReplyText(list.valasz ?? '');
+    setReplyError(null);
+  }
+
+  async function sendReply(list: MaterialList) {
+    const text = replyText.trim();
+    if (!text) {
+      setReplyError('Írjon üzenetet a vevőnek.');
+      return;
+    }
+    setReplySending(true);
+    setReplyError(null);
+    try {
+      const res = await fetch('/api/admin/material-lists', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken()}` },
+        body: JSON.stringify({ id: list.id, valasz: text }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setReplyError(j.error ?? 'Nem sikerült elküldeni.');
+        return;
+      }
+      setReplyFor(null);
+      setReplyText('');
+      fetchLists();
+      const href = smsComposeHref(list.telefon, text);
+      const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (mobile) {
+        window.location.href = href;
+      } else {
+        const a = document.createElement('a');
+        a.href = href;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    } catch {
+      setReplyError('Hálózati hiba.');
+    } finally {
+      setReplySending(false);
+    }
   }
 
   if (error) return <p style={{ color: '#f87171', fontSize: 14 }}>{error}</p>;
@@ -1083,14 +1432,45 @@ function MaterialListsTab() {
                     ))}
                   </ul>
                   {list.megjegyzes && <p style={{ fontSize: 13, color: '#8899aa', margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>💬 {list.megjegyzes}</p>}
-                  <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>{fmtDate(list.created_at)}{list.kesz_at && ` · kész: ${fmtDate(list.kesz_at)}`}</p>
+                  {list.valasz && (
+                    <p style={{ fontSize: 13, color: '#00FFEF', margin: '0 0 6px', whiteSpace: 'pre-wrap' }}>
+                      ↩️ {list.valasz}{' '}
+                      <a href={smsComposeHref(list.telefon, list.valasz)} style={{ color: '#00FFEF', textDecoration: 'underline' }}>SMS újranyitása</a>
+                    </p>
+                  )}
+                  <p style={{ fontSize: 11, color: '#475569', margin: 0 }}>{fmtDate(list.created_at)}{list.kesz_at && ` · kész: ${fmtDate(list.kesz_at)}`}{list.valasz_at && ` · válasz: ${fmtDate(list.valasz_at)}`}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
                   {list.statusz === 'uj' && <button onClick={() => updateStatus(list.id, 'osszekeszitve')} style={actBtn('rgba(234,179,8,0.18)', '#facc15')}>✓ Összekészítve</button>}
                   {list.statusz === 'osszekeszitve' && <button onClick={() => updateStatus(list.id, 'kesz')} style={actBtn('rgba(45,155,111,0.18)', '#34d399')}>✓ Átvette</button>}
                   <button onClick={() => remove(list.id)} style={actBtn('rgba(239,68,68,0.12)', '#f87171')}>Törlés</button>
+                  <button type="button" onClick={() => openReply(list)} style={actBtn('rgba(0,255,239,0.15)', '#00FFEF')}>Válasz</button>
                 </div>
               </div>
+              {replyFor === list.id && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0,255,239,0.12)' }}>
+                  <label htmlFor={`ml-reply-${list.id}`} style={{ display: 'block', fontSize: 12, color: '#8899aa', marginBottom: 6 }}>Üzenet a vevőnek (SMS)</label>
+                  <textarea
+                    id={`ml-reply-${list.id}`}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    placeholder="pl. Összekészítettük, 14 800 Ft, ma 16-ig átvehető a boltban."
+                    disabled={replySending}
+                    style={{ width: '100%', boxSizing: 'border-box', background: '#060d18', border: '1px solid rgba(0,255,239,0.2)', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', resize: 'vertical', minHeight: 72 }}
+                  />
+                  {replyError && <p style={{ color: '#f87171', fontSize: 12, margin: '6px 0 0' }}>{replyError}</p>}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => sendReply(list)} disabled={replySending} style={{ ...actBtn('#00FFEF', '#060d18'), minHeight: 44, opacity: replySending ? 0.6 : 1 }}>
+                      {replySending ? 'Küldés...' : 'Küldés'}
+                    </button>
+                    <button type="button" onClick={() => { setReplyFor(null); setReplyError(null); }} disabled={replySending} style={{ ...actBtn('transparent', '#8899aa'), minHeight: 44, border: '1px solid rgba(136,153,170,0.35)' }}>
+                      Mégse
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

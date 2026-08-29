@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { sanitizeForEmail } from '@/lib/security';
+import { sanitizeForEmail, allowRequest, rateLimited } from '@/lib/security';
 import { insertOne } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
@@ -22,6 +22,7 @@ interface LeadRecord {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!allowRequest(req, 'public-form', 8, 10 * 60 * 1000)) return rateLimited();
     const body = await req.json();
     const { name, email, phone, subject, message } = body;
 

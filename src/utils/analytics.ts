@@ -1,5 +1,14 @@
+export const CONSENT_KEY = 'velencevill_cookie_consent';
+export const CONSENT_EVENT = 'velencevill-consent';
+
+export function hasAnalyticsConsent(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(CONSENT_KEY) === 'all';
+}
+
 export function trackEvent(event: string, data?: Record<string, unknown>) {
   if (typeof window === 'undefined') return;
+  if (!hasAnalyticsConsent()) return;
   const sessionId = getOrCreateSessionId();
 
   if (event !== 'pageview') {

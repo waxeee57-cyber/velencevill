@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { sanitizeForEmail } from '@/lib/security';
+import { sanitizeForEmail, allowRequest, rateLimited } from '@/lib/security';
 import { insertOne } from '@/lib/blobStore';
 
 const PHONE = '+36 30 618 2165';
@@ -19,6 +19,7 @@ interface CallbackRecord {
 
 export async function POST(request: Request) {
   try {
+    if (!allowRequest(request, 'public-form', 8, 10 * 60 * 1000)) return rateLimited();
     const body = await request.json();
     const { phone, name, preferred_time, message } = body;
 

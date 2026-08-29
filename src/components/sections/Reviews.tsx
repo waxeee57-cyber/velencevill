@@ -33,14 +33,14 @@ export default function Reviews() {
         <div className="reviews-grid">
           {REVIEWS.map((r, i) => (
             <div key={i} className="reveal glass-card"
-              style={{ padding: '1.25rem', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d', cursor: 'default' }}
+              style={{ padding: '1.25rem', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', cursor: 'default' }}
               onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-8px) rotateX(4deg) scale(1.02)';
+                e.currentTarget.style.transform = 'translateY(-6px)';
                 e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15)';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.4)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0) rotateX(0) scale(1)';
+                e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.15)';
               }}>

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { sanitizeForEmail } from '@/lib/security'
+import { sanitizeForEmail, allowRequest, rateLimited } from '@/lib/security'
 
 export async function POST(request: Request) {
   try {
+    if (!allowRequest(request, 'public-form', 8, 10 * 60 * 1000)) return rateLimited()
     const body = await request.json()
     const { name, phone, calculatorType, calculatorResult } = body
 

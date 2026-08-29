@@ -163,7 +163,7 @@ function McbCalc() {
 
 function CtaHint() {
   return (
-    <p style={{ fontSize: 12, color: '#475569' }}>
+    <p style={{ fontSize: 12, color: '#8899aa' }}>
       Segítségre van szüksége?{' '}
       <a href="tel:+36306182165" style={{ color: '#00FFEF', textDecoration: 'none' }}>Hívjon minket: +36 30 618 2165</a>
     </p>

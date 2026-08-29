@@ -35,14 +35,14 @@ export default function Products() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {PRODUCTS.map(p => (
             <div key={p.title} className="reveal"
-              style={{ position: 'relative', background: 'rgba(13,31,60,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 12, padding: '1.25rem', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', transformStyle: 'preserve-3d', cursor: 'default' }}
+              style={{ position: 'relative', background: 'rgba(13,31,60,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,255,239,0.15)', borderRadius: 12, padding: '1.25rem', transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease', cursor: 'default' }}
               onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-8px) rotateX(4deg) scale(1.02)';
+                e.currentTarget.style.transform = 'translateY(-6px)';
                 e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,255,239,0.15), 0 0 0 1px rgba(0,255,239,0.3)';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.4)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0) rotateX(0) scale(1)';
+                e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
                 e.currentTarget.style.borderColor = 'rgba(0,255,239,0.15)';
               }}>

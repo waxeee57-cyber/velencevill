@@ -3,7 +3,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
-  title: 'ÁSZF | Velence Vill Kft.',
+  title: 'ÁSZF',
   description: 'Velence Vill Kft. általános tájékoztatója az üzlet működéséről és az ajánlatkérés feltételeiről.',
   alternates: { canonical: '/aszf' },
 };
@@ -18,7 +18,7 @@ export default function AszfPage() {
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', padding: '4rem 2rem' }}>
           <h1 style={{ fontSize: 30, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Általános tájékoztató (ÁSZF)</h1>
-          <p style={{ fontSize: 13, color: '#475569', marginBottom: 24 }}>Hatályos: {new Date().getFullYear()}.</p>
+          <p style={{ fontSize: 13, color: '#8899aa', marginBottom: 24 }}>Hatályos: {new Date().getFullYear()}.</p>
 
           <div style={{ background: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: 12, padding: '14px 16px', marginBottom: 28 }}>
             <p style={{ fontSize: 13, color: '#facc15', margin: 0, lineHeight: 1.6 }}>

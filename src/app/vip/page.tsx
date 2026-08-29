@@ -3,7 +3,7 @@ import { getAll } from '@/lib/blobStore'
 import VipQuickRequestForm from '@/components/VipQuickRequestForm'
 
 export const metadata: Metadata = {
-  title: 'VIP Partner | Velence Vill Kft.',
+  title: 'VIP Partner',
   description: 'Exkluzív VIP partner felület — Velence Vill Kft.',
   robots: 'noindex, nofollow',
 }

@@ -19,14 +19,14 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: Props): Metadata {
   const city = CITIES.find(c => c.slug === params.varos);
   if (!city) return {};
-  const title = `Villanyszerelési anyag ${city.name} — Velence Vill Kft.`;
+  const title = `Villanyszerelési anyag ${city.name}`;
   const description = `Villanyszerelési szaküzlet ${city.name} közelében, Velencén. 10+ vezető márka: Legrand, Schneider Electric, Tracon, EGLO. ${city.leiras}.`;
   return {
     title,
     description,
     keywords: [`villanyszerelési anyag ${city.name}`, `villamos szaküzlet ${city.name}`, 'Velence Vill', 'villanyszerelő Fejér megye'],
     alternates: { canonical: `/helyi/${city.slug}` },
-    openGraph: { title, description, url: `/helyi/${city.slug}`, type: 'website' },
+    openGraph: { title: `${title} | Velence Vill Kft.`, description, url: `/helyi/${city.slug}`, type: 'website' },
   };
 }
 
@@ -74,8 +74,8 @@ export default function VarosPage({ params }: Props) {
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem' }}>
           {/* Breadcrumb */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', marginBottom: 24 }}>
-            <Link href="/" style={{ color: '#475569', textDecoration: 'none' }}>Főoldal</Link>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#8899aa', marginBottom: 24 }}>
+            <Link href="/" style={{ color: '#8899aa', textDecoration: 'none' }}>Főoldal</Link>
             <span>›</span>
             <span style={{ color: '#8899aa' }}>{city.name}</span>
           </nav>
@@ -109,7 +109,7 @@ export default function VarosPage({ params }: Props) {
               {[['H–P', '8:00–16:00'], ['Szo', '8:00–12:00'], ['Vas', 'Zárva']].map(([d, t]) => (
                 <div key={d} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '0.5px solid rgba(0,255,239,0.06)', fontSize: 14 }}>
                   <span style={{ color: '#8899aa' }}>{d}</span>
-                  <span style={{ color: t === 'Zárva' ? '#475569' : '#fff', fontWeight: 500 }}>{t}</span>
+                  <span style={{ color: t === 'Zárva' ? '#8899aa' : '#fff', fontWeight: 500 }}>{t}</span>
                 </div>
               ))}
               <div style={{ marginTop: 16, paddingTop: 12, borderTop: '0.5px solid rgba(0,255,239,0.1)' }}>

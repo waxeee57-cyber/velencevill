@@ -17,7 +17,7 @@ export default function MobileStickyBar() {
       <a
         href="tel:+36306182165"
         aria-label="Velence Vill telefonhívás: +36 30 618 2165"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, gap: 3, transition: 'color 0.2s' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 12, fontWeight: 500, gap: 3, transition: 'color 0.2s', minHeight: 44 }}
         onMouseEnter={e => (e.currentTarget.style.color = '#00FFEF')}
         onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -31,7 +31,7 @@ export default function MobileStickyBar() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Útvonaltervezés Google Maps-en Velence Vill szaküzlethez"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, gap: 3, transition: 'color 0.2s' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 12, fontWeight: 500, gap: 3, transition: 'color 0.2s', minHeight: 44 }}
         onMouseEnter={e => (e.currentTarget.style.color = '#00FFEF')}
         onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -43,7 +43,7 @@ export default function MobileStickyBar() {
       <a
         href="sms:+36306182165"
         aria-label="SMS küldése Velence Vill szaküzletnek"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, gap: 3, transition: 'color 0.2s' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', textDecoration: 'none', color: '#8899aa', fontSize: 12, fontWeight: 500, gap: 3, transition: 'color 0.2s', minHeight: 44 }}
         onMouseEnter={e => (e.currentTarget.style.color = '#00FFEF')}
         onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -55,7 +55,7 @@ export default function MobileStickyBar() {
       <button
         onClick={scrollToAjanlat}
         aria-label="Ajánlatot kérek – ugrás az ajánlatkérő űrlaphoz"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', background: 'none', border: 'none', color: '#8899aa', fontSize: 10, fontWeight: 500, cursor: 'pointer', gap: 3, transition: 'color 0.2s' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 0', background: 'none', border: 'none', color: '#8899aa', fontSize: 12, fontWeight: 500, cursor: 'pointer', gap: 3, transition: 'color 0.2s', minHeight: 44 }}
         onMouseEnter={e => (e.currentTarget.style.color = '#00FFEF')}
         onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

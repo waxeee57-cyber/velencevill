@@ -5,7 +5,7 @@ import AvailabilityBadge from '@/components/AvailabilityBadge';
 import TermekekCatalog from './TermekekCatalog';
 
 export const metadata: Metadata = {
-  title: 'Termékek — Velence Vill Kft.',
+  title: 'Termékek',
   description: 'Villanyszerelési termékek kereshető katalógusa: kábelek, kapcsolók, elosztók, világítástechnika, szerelési anyagok és szerszámok. Elérhetőségi jelzéssel, azonnali anyaglista-küldéssel.',
   keywords: ['villanyszerelési termékek', 'kábelek', 'kapcsolók', 'elosztók', 'világítástechnika', 'villanyszerelési anyagok Velence'],
   alternates: { canonical: '/termekek' },
@@ -26,7 +26,7 @@ export default function TermekekPage() {
 
           {/* Szemafór jelmagyarázat */}
           <div className="glass-card" style={{ padding: '1rem 1.25rem', marginBottom: 32, display: 'flex', flexWrap: 'wrap', gap: '10px 24px', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Elérhetőség:</span>
+            <span style={{ fontSize: 12, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>Elérhetőség:</span>
             <AvailabilityBadge status="keszleten" />
             <AvailabilityBadge status="korlatozott" />
             <AvailabilityBadge status="rendelheto" />

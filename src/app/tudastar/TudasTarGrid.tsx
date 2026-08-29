@@ -65,7 +65,7 @@ export default function TudasTarGrid() {
                 <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 10, background: 'rgba(0,255,239,0.08)', color: '#00FFEF', border: '0.5px solid rgba(0,255,239,0.2)', whiteSpace: 'nowrap' }}>
                   {CATEGORY_LABELS[a.category]}
                 </span>
-                <span style={{ fontSize: 11, color: '#475569', whiteSpace: 'nowrap' }}>{a.readTime} perc</span>
+                <span style={{ fontSize: 11, color: '#8899aa', whiteSpace: 'nowrap' }}>{a.readTime} perc</span>
               </div>
               <h2 style={{ fontSize: 15, fontWeight: 600, color: '#fff', lineHeight: 1.4, margin: 0, flex: 1 }}>{a.title}</h2>
               <p style={{ fontSize: 13, color: '#8899aa', lineHeight: 1.6, margin: 0 }}>{a.description}</p>

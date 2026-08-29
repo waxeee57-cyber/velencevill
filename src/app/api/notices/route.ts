@@ -9,6 +9,7 @@ interface NoticeRecord {
   created_at: string;
   body: string;
   href: string | null;
+  image_url?: string | null;
   active: boolean;
 }
 
@@ -19,7 +20,7 @@ export async function GET() {
       .filter((n) => n.active)
       .sort((a, b) => b.created_at.localeCompare(a.created_at))
       .slice(0, 12)
-      .map(({ id, body, href }) => ({ id, body, href }));
+      .map(({ id, body, href, image_url }) => ({ id, body, href, image_url: image_url ?? null }));
     return NextResponse.json({ notices: active });
   } catch {
     return NextResponse.json({ notices: [] });

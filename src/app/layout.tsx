@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
-import MobileStickyBar from '@/components/MobileStickyBar';
-import CookieBanner from '@/components/CookieBanner';
-import ExitSurvey from '@/components/ExitSurvey';
+import PublicOverlays from '@/components/PublicOverlays';
 import { SITE_URL } from '@/lib/site';
 
 const spaceGrotesk = Space_Grotesk({
@@ -123,13 +120,13 @@ const websiteSchema = {
   url: SITE_URL,
   name: 'Velence Vill Kft.',
   inLanguage: 'hu-HU',
-  publisher: { '@id': `${SITE_URL}/#business` },
+  publisher: { '@id': `${SITE_URL}/#organization` },
 };
 
 const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': `${SITE_URL}/#business`,
+  '@id': `${SITE_URL}/#organization`,
   name: 'Velence Vill Kft.',
   url: SITE_URL,
   logo: `${SITE_URL}/icon-512.png`,
@@ -150,37 +147,6 @@ const organizationSchema = {
   ],
 };
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Mikor van nyitva a Velence Vill szaküzlet?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Hétfőtőt péntekig 8:00-16:00, szombaton 8:00-12:00, vasárnap zárva.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Milyen márkákat forgalmaz a Velence Vill Kft.?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: '10+ vezető márkát: Tracon, Schneider Electric, Legrand, Kanlux, Rábalux, EGLO, GLOBO, EMOS, KOPP, OBO, Csatári Plast, Famatel, Mentavill.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: 'Hol található a Velence Vill szaküzlet?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Velence, Fecske utca 12., 2481. Google Maps: https://www.google.com/maps/search/?api=1&query=Fecske+utca+12,+2481+Velence — Waze: https://waze.com/ul?q=Fecske+utca+12+Velence&navigate=yes',
-      },
-    },
-  ],
-};
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="hu">
@@ -188,17 +154,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className={`${spaceGrotesk.variable} antialiased`}>
         {children}
-        <MobileStickyBar />
-        <CookieBanner />
-        <ExitSurvey />
-        <Analytics />
+        <PublicOverlays />
       </body>
     </html>
   );

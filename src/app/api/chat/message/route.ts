@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { insertOne, updateOne, isBlobConfigured } from '@/lib/blobStore';
+import { allowRequest, rateLimited } from '@/lib/security';
 
 interface ChatMessageRecord {
   id: string;
@@ -22,6 +23,7 @@ interface ChatRecord {
 // Publikus végpont — a látogató saját üzenete (sender mindig 'user', a
 // szerver kényszeríti ki, a kliens nem tud admin-üzenetet hamisítani).
 export async function POST(request: Request) {
+  if (!allowRequest(request, 'chat-message', 40, 10 * 60 * 1000)) return rateLimited();
   if (!isBlobConfigured()) return NextResponse.json({ error: 'Szerver konfigurációs hiba' }, { status: 503 });
 
   const { chatId, content } = await request.json().catch(() => ({}));

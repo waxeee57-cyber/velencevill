@@ -4,7 +4,7 @@ import Footer from '@/components/layout/Footer';
 import AnyaglistaClient from './AnyaglistaClient';
 
 export const metadata: Metadata = {
-  title: 'Anyaglista — Velence Vill Kft.',
+  title: 'Anyaglista',
   description: 'Állítsa össze a projektjéhez szükséges anyagokat, és küldje el egy kattintással a Velence Vill szaküzletnek — mi összekészítjük, Ön csak beugrik érte.',
   robots: { index: false, follow: true },
 };

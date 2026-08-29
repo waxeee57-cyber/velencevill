@@ -39,9 +39,9 @@ export default function Navbar() {
           <div className="nav-links">
             {[['Termékek','/termekek'],['Márkák','/markak'],['Villanyszerelő','/szerelo'],['Tudástár','/tudastar'],['Kalkulátor','/kalkulator']].map(([label, href]) => (
               <Link key={href} href={href}
-                style={{ fontSize: 14, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
+                style={{ fontSize: 14, color: '#94A3B8', textDecoration: 'none', transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}>
+                onMouseLeave={e => (e.currentTarget.style.color = '#94A3B8')}>
                 {label}
               </Link>
             ))}
@@ -49,7 +49,7 @@ export default function Navbar() {
           <Link
             href="/anyaglista"
             aria-label={`Anyaglista${anyaglistaCount > 0 ? ` — ${anyaglistaCount} tétel` : ''}`}
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, background: 'rgba(0,255,239,0.08)', border: '0.5px solid rgba(0,255,239,0.2)' }}
+            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 8, background: 'rgba(0,255,239,0.08)', border: '0.5px solid rgba(0,255,239,0.2)' }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00FFEF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 01-8 0" />

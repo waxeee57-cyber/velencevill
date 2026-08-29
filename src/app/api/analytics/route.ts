@@ -1,18 +1,7 @@
 import { NextResponse } from 'next/server';
-
-interface AnalyticsEvent {
-  event: string;
-  data?: Record<string, unknown>;
-  sessionId: string;
-  timestamp: number;
-  pathname?: string;
-  referrer?: string;
-}
-
-// In-memory store — resets on server restart / új deploy-nál. Alacsony
-// forgalomnál elfogadható; ha ez szűk keresztmetszet lenne, a blobStore
-// mintájára JSON-kollekcióba is kiválthatóvá válna.
-const events: AnalyticsEvent[] = [];
+import { verifyAdminToken } from '@/lib/adminAuth';
+import { allowRequest, rateLimited } from '@/lib/security';
+import { getAnalyticsEvents, appendAnalyticsEvents, type AnalyticsEvent } from '@/lib/blobStore';
 
 const CTA_EVENTS = new Set([
   'phone_click', 'sms_click', 'map_click', 'waze_click',
@@ -20,7 +9,26 @@ const CTA_EVENTS = new Set([
   'instagram_click', 'callback_click',
 ]);
 
-export async function GET() {
+// In-memory buffer for batched writes
+const writeBuffer: AnalyticsEvent[] = [];
+let flushTimeout: NodeJS.Timeout | null = null;
+
+function scheduleFlush() {
+  if (flushTimeout) return;
+  flushTimeout = setTimeout(async () => {
+    flushTimeout = null;
+    if (writeBuffer.length) {
+      const toFlush = writeBuffer.splice(0, writeBuffer.length);
+      try {
+        await appendAnalyticsEvents(toFlush);
+      } catch {
+        // Silent fail - events lost but don't crash the request
+      }
+    }
+  }, 5000);
+}
+
+function aggregate(events: AnalyticsEvent[]) {
   const now = Date.now();
 
   const days = Array.from({ length: 14 }, (_, i) => {
@@ -86,7 +94,7 @@ export async function GET() {
     .filter(e => e.event === 'survey_submit')
     .map(e => ({ ...(e.data as object), timestamp: e.timestamp }));
 
-  return NextResponse.json({
+  return {
     total: events.filter(e => e.event === 'pageview').length,
     uniqueSessions,
     topEvent,
@@ -96,18 +104,56 @@ export async function GET() {
     referrers,
     recentPassive,
     surveyResults,
-  });
+  };
+}
+
+export async function GET(request: Request) {
+  const auth = request.headers.get('authorization') ?? '';
+  if (!verifyAdminToken(auth.startsWith('Bearer ') ? auth.slice(7) : '')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const fourteenDaysMs = 14 * 864e5;
+  const events = await getAnalyticsEvents(Date.now() - fourteenDaysMs);
+  const data = aggregate(events);
+
+  return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
   try {
+    if (!allowRequest(request, 'analytics-post', 90, 60 * 1000)) return rateLimited();
     const body = await request.json();
     const { event, data, sessionId, timestamp, pathname, referrer } = body;
     if (typeof event !== 'string' || typeof sessionId !== 'string') {
       return NextResponse.json({ ok: false }, { status: 400 });
     }
-    events.push({ event, data, sessionId, timestamp: timestamp ?? Date.now(), pathname, referrer });
-    if (events.length > 50000) events.splice(0, 5000);
+
+    const newEvent: AnalyticsEvent = {
+      event,
+      data,
+      sessionId,
+      timestamp: timestamp ?? Date.now(),
+      pathname,
+      referrer,
+    };
+
+    writeBuffer.push(newEvent);
+    if (writeBuffer.length >= 100) {
+      const toFlush = writeBuffer.splice(0, writeBuffer.length);
+      try {
+        await appendAnalyticsEvents(toFlush);
+      } catch {
+        // Silent fail
+      }
+      if (flushTimeout) {
+        clearTimeout(flushTimeout);
+        flushTimeout = null;
+      }
+    } else {
+      scheduleFlush();
+    }
+
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 });

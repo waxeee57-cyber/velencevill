@@ -74,10 +74,10 @@ export default function ArticlePage({ params }: Props) {
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 2rem' }}>
           {/* Breadcrumb */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', marginBottom: 32 }}>
-            <Link href="/" style={{ color: '#475569', textDecoration: 'none' }}>Főoldal</Link>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#8899aa', marginBottom: 32 }}>
+            <Link href="/" style={{ color: '#8899aa', textDecoration: 'none' }}>Főoldal</Link>
             <span>›</span>
-            <Link href="/tudastar" style={{ color: '#475569', textDecoration: 'none' }}>Tudástár</Link>
+            <Link href="/tudastar" style={{ color: '#8899aa', textDecoration: 'none' }}>Tudástár</Link>
             <span>›</span>
             <span style={{ color: '#8899aa' }}>{article.title}</span>
           </nav>
@@ -87,8 +87,8 @@ export default function ArticlePage({ params }: Props) {
             <span style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 10, background: 'rgba(0,255,239,0.08)', color: '#00FFEF', border: '0.5px solid rgba(0,255,239,0.2)' }}>
               {CATEGORY_LABELS[article.category]}
             </span>
-            <span style={{ fontSize: 12, color: '#475569' }}>{article.publishDate}</span>
-            <span style={{ fontSize: 12, color: '#475569' }}>{article.readTime} perces olvasás</span>
+            <span style={{ fontSize: 12, color: '#8899aa' }}>{article.publishDate}</span>
+            <span style={{ fontSize: 12, color: '#8899aa' }}>{article.readTime} perces olvasás</span>
           </div>
 
           <h1 style={{ fontSize: 32, fontWeight: 700, color: '#ffffff', marginBottom: 40, lineHeight: 1.3 }}>

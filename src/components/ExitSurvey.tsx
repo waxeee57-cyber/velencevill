@@ -69,9 +69,8 @@ export default function ExitSurvey() {
   };
 
   return (
-    <div style={{
+    <div className="exit-survey" style={{
       position: 'fixed',
-      bottom: 24,
       left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 80,
@@ -80,7 +79,8 @@ export default function ExitSurvey() {
       <div className="glass-card" style={{ padding: '1.25rem', position: 'relative' }}>
         <button
           onClick={dismiss}
-          style={{ position: 'absolute', top: 10, right: 12, background: 'none', border: 'none', color: '#8899aa', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 0 }}>
+          aria-label="Kérdőív bezárása"
+          style={{ position: 'absolute', top: 4, right: 4, background: 'none', border: 'none', color: '#8899aa', fontSize: 22, cursor: 'pointer', lineHeight: 1, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           ×
         </button>
 

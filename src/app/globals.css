@@ -25,6 +25,34 @@ html, body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Süti-sáv a sticky bar fölött mobilon, ne takarja a hívás/SMS gombokat */
+.cookie-banner {
+  bottom: 0;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+.exit-survey {
+  bottom: 24px;
+}
+@media (max-width: 767px) {
+  .cookie-banner {
+    bottom: 64px;
+    padding-bottom: 1rem;
+  }
+  .exit-survey {
+    bottom: 88px;
+  }
+}
+
+/* Fókuszgyűrű — az inline outline:none-t is viszi */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #00FFEF !important;
+  outline-offset: 2px;
+}
+
 :root {
   --cyan: #00FFEF;
   --dark-base: #060d18;
@@ -102,7 +130,6 @@ select option {
   }
   .btn-primary:hover {
     box-shadow: 0 0 28px rgba(0, 255, 239, 0.45);
-    transform: scale(1.03);
   }
   .btn-secondary {
     background: transparent;
@@ -180,6 +207,9 @@ select option {
 }
 
 /* ── Chat widget responsive position ──────────────── */
+.sms-fab {
+  bottom: 88px;
+}
 .chat-btn-wrap {
   position: fixed;
   bottom: 88px;
@@ -193,6 +223,9 @@ select option {
   z-index: 50;
 }
 @media (min-width: 768px) {
+  .sms-fab {
+    bottom: 24px;
+  }
   .chat-btn-wrap {
     bottom: 24px;
     right: 24px;

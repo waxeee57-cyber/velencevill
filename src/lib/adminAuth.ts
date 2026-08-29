@@ -9,6 +9,12 @@ function secret(): string {
   return process.env.ADMIN_PASSWORD ?? '';
 }
 
+export function passwordsMatch(provided: string, expected: string): boolean {
+  const a = crypto.createHash('sha256').update(provided).digest();
+  const b = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
 export function signAdminToken(): string {
   const exp = Date.now() + TTL_MS;
   const payload = Buffer.from(JSON.stringify({ exp })).toString('base64url');

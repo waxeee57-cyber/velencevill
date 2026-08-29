@@ -3,7 +3,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
-  title: 'Villanyszerelő Partner — Velence Vill Kft.',
+  title: 'Villanyszerelő Partner',
   description: 'Megbízható villanyszerelő partnert keres Velencén és Fejér megyében? Mike József regisztrált villanyszerelő vállalja a teljes körű munkákat.',
   keywords: ['villanyszerelő Velence', 'villanyszerelő Fejér megye', 'Mike József villanyszerelő', 'elosztótábla csere', 'mérőhely kialakítás'],
   alternates: { canonical: '/szerelo' },

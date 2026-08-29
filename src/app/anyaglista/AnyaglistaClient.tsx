@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Toast from '@/components/ui/Toast';
 import { useAnyaglista } from '@/hooks/useAnyaglista';
@@ -15,6 +15,29 @@ export default function AnyaglistaClient() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [sentRef, setSentRef] = useState<string | null>(null);
+  const [shopReply, setShopReply] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!sentRef || sentRef === 'OK') return;
+    let cancelled = false;
+    const started = Date.now();
+    const MAX_MS = 15 * 60 * 1000;
+    async function poll() {
+      if (Date.now() - started > MAX_MS) return;
+      try {
+        const res = await fetch(`/api/anyaglista?id=${encodeURIComponent(sentRef!)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && typeof data.valasz === 'string' && data.valasz.trim()) {
+          setShopReply(data.valasz);
+        }
+      } catch {
+        /* a vevő a sikeres oldalon marad — a poll hiba nem zavar */
+      }
+    }
+    poll();
+    const t = setInterval(poll, 4000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [sentRef]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,6 +84,12 @@ export default function AnyaglistaClient() {
           Munkatársunk összekészíti a tételeket, és <strong style={{ color: '#fff' }}>telefonon visszahívjuk</strong> az árral és az átvétel részleteivel —
           jellemzően még aznap, vagy legkésőbb a következő nyitvatartási napon reggel.
         </p>
+        {shopReply && (
+          <div style={{ textAlign: 'left', marginBottom: 20, padding: '14px 16px', border: '1px solid rgba(0,255,239,0.3)', borderRadius: 12, background: 'rgba(0,255,239,0.06)' }}>
+            <p style={{ fontSize: 11, color: '#00FFEF', letterSpacing: '0.08em', margin: '0 0 6px', fontWeight: 600 }}>VÁLASZ A BOLTTÓL</p>
+            <p style={{ fontSize: 14, color: '#fff', margin: 0, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{shopReply}</p>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/termekek" className="btn-secondary" style={{ textDecoration: 'none', fontSize: 14 }}>Új lista összeállítása</Link>
           <a href={`tel:${PHONE.replace(/\s+/g, '')}`} className="btn-primary" style={{ textDecoration: 'none', fontSize: 14 }}>📞 Hívom most inkább</a>
@@ -95,7 +124,7 @@ export default function AnyaglistaClient() {
                 </button>
               </div>
             ))}
-            <button type="button" onClick={clearAll} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#475569', fontSize: 12, cursor: 'pointer', padding: '4px 0' }}>
+            <button type="button" onClick={clearAll} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', color: '#8899aa', fontSize: 12, cursor: 'pointer', padding: '8px 0' }}>
               Egész lista törlése
             </button>
           </div>

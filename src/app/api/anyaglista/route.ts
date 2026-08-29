@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { sanitizeForEmail } from '@/lib/security';
-import { insertOne } from '@/lib/blobStore';
+import { sanitizeForEmail, allowRequest, rateLimited } from '@/lib/security';
+import { insertOne, getAll, isBlobConfigured } from '@/lib/blobStore';
+
+const LIST_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const PHONE = '+36 30 618 2165';
 const MAX_ITEMS = 60;
@@ -24,6 +26,23 @@ interface MaterialListRecord {
   statusz: string;
   forras: string;
   kesz_at: string | null;
+  valasz?: string | null;
+  valasz_at?: string | null;
+}
+
+/** Vevő a sikeres oldalon maradva látja a bolt válaszát — csak valasz, nem a teljes lista. */
+export async function GET(req: NextRequest) {
+  if (!allowRequest(req, 'anyaglista-poll', 60, 60 * 1000)) return rateLimited();
+  const id = req.nextUrl.searchParams.get('id');
+  if (!id || !LIST_ID.test(id) || !isBlobConfigured()) {
+    return NextResponse.json({ valasz: null }, { headers: { 'Cache-Control': 'no-store' } });
+  }
+  const lists = await getAll<MaterialListRecord>('material_lists');
+  const row = lists.find((l) => l.id === id);
+  return NextResponse.json(
+    { valasz: row?.valasz ?? null, valasz_at: row?.valasz_at ?? null },
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
 }
 
 function isValidTetel(t: unknown): t is TetelInput {
@@ -34,6 +53,7 @@ function isValidTetel(t: unknown): t is TetelInput {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!allowRequest(req, 'public-form', 8, 10 * 60 * 1000)) return rateLimited();
     const body = await req.json();
     const { nev, telefon, megjegyzes, tetelek } = body;
 
