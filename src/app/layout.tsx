@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import PublicOverlays from '@/components/PublicOverlays';
+import PageViewTracker from '@/components/PageViewTracker';
 import { SITE_URL } from '@/lib/site';
 
 const spaceGrotesk = Space_Grotesk({
@@ -161,6 +162,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${spaceGrotesk.variable} antialiased`}>
         {children}
         <PublicOverlays />
+        <PageViewTracker />
       </body>
     </html>
   );
