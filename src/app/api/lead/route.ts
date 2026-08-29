@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
           name, email: email || 'Nincs megadva', phone,
           subject: subject || 'Általános', message: message || 'Nincs üzenet',
         });
-        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu';
-        const toEmail = process.env.RESEND_TO_EMAIL ?? 'info@velencevill.hu';
+        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu';
+        const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com';
         await resend.emails.send({
           from: `Velence Vill Weboldal <${fromEmail}>`,
           to: [toEmail],

@@ -81,8 +81,8 @@ export async function POST(request: Request) {
       const { Resend } = await import('resend');
       const resend = new Resend(resendKey);
       const safe = sanitizeForEmail({ name: nev, phone: telefon, note: uzenet || 'Nincs üzenet' });
-      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu';
-      const toEmail = process.env.RESEND_TO_EMAIL ?? 'info@velencevill.hu';
+      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu';
+      const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com';
       await resend.emails.send({
         from: `Velence Vill VIP <${fromEmail}>`,
         to: [toEmail],

@@ -58,8 +58,8 @@ export async function POST(request: Request) {
           phone, name: name || 'Nincs megadva',
           preferred_time: preferred_time || 'Bármikor', message: message || '',
         });
-        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu';
-        const toEmail = process.env.RESEND_TO_EMAIL ?? 'info@velencevill.hu';
+        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu';
+        const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com';
         await resend.emails.send({
           from: `Velence Vill Visszahívás <${fromEmail}>`,
           to: [toEmail],

@@ -9,8 +9,8 @@ export async function POST(request: Request) {
       const { Resend } = await import('resend');
       const resend = new Resend(process.env.RESEND_API_KEY);
       const safe = sanitizeForEmail({ nev: nev ?? '', telefon: telefon ?? '', message: message ?? '', sessionId: sessionId ?? '' });
-      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu';
-      const toEmail = process.env.RESEND_TO_EMAIL ?? 'info@velencevill.hu';
+      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu';
+      const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com';
       await resend.emails.send({
         from: `Velence Vill Chat <${fromEmail}>`,
         to: toEmail,

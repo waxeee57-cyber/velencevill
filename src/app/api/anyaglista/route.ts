@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
         const itemRows = safeTetelek
           .map(t => `<li>${sanitizeForEmail({ n: t.nev }).n} — <strong>${t.mennyiseg} db</strong>${t.marka ? ` (${sanitizeForEmail({ m: t.marka }).m})` : ''}</li>`)
           .join('');
-        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu';
-        const toEmail = process.env.RESEND_TO_EMAIL ?? 'info@velencevill.hu';
+        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu';
+        const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com';
         await resend.emails.send({
           from: `Velence Vill Weboldal <${fromEmail}>`,
           to: [toEmail],

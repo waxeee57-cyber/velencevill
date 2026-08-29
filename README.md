@@ -4,8 +4,7 @@ Villamos szaküzlet / villanyszerelési anyag — Velence, Fejér megye.
 Lead-generáló marketing oldal: 3D villám hero, kalkulátorok, tudástár, márka- és
 termékoldalak, visszahívás-kérés, chat widget, VIP-oldal, admin felület.
 
-**Live URL:** `https://velencevill.hu` (forrás: `.env.example` → `NEXT_PUBLIC_SITE_URL`,
-`README` sitemap-hivatkozás). A tényleges bekötést nem ellenőriztem.
+**Live URL:** `https://velencevillkft.hu` (forrás: `.env.example` → `NEXT_PUBLIC_SITE_URL`).
 
 > ⚠️ **Ez a repó erősen elavult stacken fut: Next 14 + React 18** — két, illetve egy
 > major verzió lemaradás a testvérprojektekhez képest. Részletek és a biztonsági
@@ -23,7 +22,7 @@ termékoldalak, visszahívás-kérés, chat widget, VIP-oldal, admin felület.
 ## Tech Stack
 - **Next.js 14** (App Router, TypeScript)
 - **Tailwind CSS**
-- **Supabase** — lead tárolás
+- **Vercel Blob** — leadek, anyaglisták, VIP-kérések, chat
 - **Resend** — email értesítők
 - **Vercel** — hosting + CI/CD
 - **Three.js** — 3D villám hero
@@ -42,15 +41,13 @@ npm install
 cp .env.local.example .env.local
 ```
 Töltsd ki a `.env.local` fájlt:
-- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key
+- `NEXT_PUBLIC_SITE_URL` — `https://velencevillkft.hu`
+- `ADMIN_PASSWORD` — erős admin jelszó
 - `RESEND_API_KEY` — Resend API key
-- `RESEND_TO_EMAIL` — hova menjen az email értesítő
+- `RESEND_TO_EMAIL` — hova menjen az email értesítő (`velencevillkft@gmail.com`)
+- `BLOB_READ_WRITE_TOKEN` — Vercel Blob (élesben a store csatlakoztatása automatikusan felteszi)
 
-### 3. Supabase séma
-Supabase Dashboard > SQL Editor > másold be a `supabase-schema.sql` tartalmát > Run
-
-### 4. Fejlesztői szerver indítása
+### 3. Fejlesztői szerver indítása
 ```bash
 npm run dev
 ```
@@ -88,7 +85,7 @@ git push -u origin main
 ## Google 1. hely — teendők (sorban)
 
 1. **Google Business Profile** optimalizálás — fotók, kategória: "Villanyszerelési szaküzlet"
-2. **Search Console** regisztráció + sitemap beküldés: `https://velencevill.hu/sitemap.xml`
+2. **Search Console** regisztráció + sitemap beküldés: `https://velencevillkft.hu/sitemap.xml`
 3. **Helyi kulcsszavak** — "villamos szaküzlet Velence", "villanyszerelési anyag Fejér megye"
 4. **Backlink** — bekerülés helyi katalógusokba (Arany Oldalak, Firka.hu, stb.)
 5. **Google Ads** — azonnali láthatósághoz (opcionális, de gyorsabb)

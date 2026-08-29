@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     if (resendKey) {
       const { Resend } = await import('resend')
       const resend = new Resend(resendKey)
-      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevill.hu'
+      const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'noreply@velencevillkft.hu'
       const toEmail = process.env.RESEND_TO_EMAIL ?? 'velencevillkft@gmail.com'
 
       await resend.emails.send({
