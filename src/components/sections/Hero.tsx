@@ -82,9 +82,6 @@ export default function Hero() {
           <a href="/anyaglista" className="btn-secondary" style={{ textDecoration:'none', fontSize:15 }}>
             🧾 Termékösszeállítás
           </a>
-          <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} className="btn-secondary" style={{ fontSize:15 }}>
-            Ajánlatot kérek
-          </button>
         </div>
 
         {/* Térkép + gyorsgombok szekció */}
