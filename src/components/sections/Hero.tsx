@@ -1,5 +1,4 @@
 'use client';
-import HeroNews from '@/components/HeroNews';
 
 const SCHEDULE = [
   { day: 'Hétfő',     from: 8, to: 16 },
@@ -56,8 +55,6 @@ export default function Hero() {
           10+ vezető márka egy helyen. Profi kiszolgálás villanyszerelőknek és magánvásárlóknak egyaránt.
         </p>
 
-        <HeroNews />
-
         {/* Persona fork */}
         <div style={{ marginBottom:'1.5rem' }}>
           <p style={{ fontSize:12, color:'#8899aa', marginBottom:10, letterSpacing:'0.02em' }}>Kinek keresünk megoldást?</p>
@@ -69,7 +66,7 @@ export default function Hero() {
               <button
                 key={p.label}
                 onClick={() => document.getElementById(p.target)?.scrollIntoView({ behavior:'smooth' })}
-                style={{ padding:'10px 18px', borderRadius:50, border:'1px solid #00FFEF', background:'transparent', color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', transition:'background 0.2s ease', minHeight:44 }}
+                style={{ padding:'7px 18px', borderRadius:50, border:'1px solid #00FFEF', background:'transparent', color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', transition:'background 0.2s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,255,239,0.1)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
                 {p.label}
@@ -82,6 +79,9 @@ export default function Hero() {
           <a href="tel:+36306182165" className="btn-primary" style={{ textDecoration:'none', fontSize:15 }}>
             📞 Hívjon most · +36 30 618 2165
           </a>
+          <a href="/anyaglista" className="btn-secondary" style={{ textDecoration:'none', fontSize:15 }}>
+            🧾 Termékösszeállítás
+          </a>
           <button onClick={() => document.getElementById('ajanlat')?.scrollIntoView({ behavior:'smooth' })} className="btn-secondary" style={{ fontSize:15 }}>
             Ajánlatot kérek
           </button>
@@ -89,14 +89,14 @@ export default function Hero() {
 
         {/* Térkép + gyorsgombok szekció */}
         <div className="mt-8 md:mt-10 max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-[148px_1fr_148px] gap-3 md:gap-4 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-3 md:gap-4 items-stretch">
 
             {/* Bal: Google Maps gomb */}
             <a
               href="https://www.google.com/maps/dir/?api=1&destination=Velence+Vill+Kft+Fecske+utca+12+Velence"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-center w-full px-4 py-3 md:px-4 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
+              className="group flex items-center justify-center px-5 py-3 md:px-6 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
               aria-label="Útvonal Google Maps-ben"
             >
               <div className="flex flex-col items-center gap-2">
@@ -145,7 +145,7 @@ export default function Hero() {
               href="https://waze.com/ul?q=Velence+Vill+Kft+Fecske+utca+12+Velence&navigate=yes"
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center justify-center w-full px-4 py-3 md:px-4 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
+              className="group flex items-center justify-center px-5 py-3 md:px-6 md:py-0 md:min-h-[220px] rounded-xl bg-[#0d1f3c]/60 hover:bg-[#0d1f3c] border border-[#00FFEF]/20 hover:border-[#00FFEF]/50 transition-all hover:scale-[1.02]"
               aria-label="Útvonal Waze-ben"
             >
               <div className="flex flex-col items-center gap-2">
