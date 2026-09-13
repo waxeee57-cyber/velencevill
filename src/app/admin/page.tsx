@@ -25,7 +25,7 @@ interface AnalyticsData {
   surveyResults: { found?: string; missing?: string; timestamp: number }[];
 }
 
-type Tab = 'chatok' | 'analitika' | 'leadek' | 'visszahivas' | 'kerdoiv' | 'vip' | 'hirek' | 'anyaglistak' | 'vipgyors';
+type Tab = 'chatok' | 'analitika' | 'clarity' | 'leadek' | 'visszahivas' | 'kerdoiv' | 'vip' | 'hirek' | 'anyaglistak' | 'vipgyors';
 
 // ── Megosztott típusok / segédek a lead + visszahívás kezeléshez ────────────────
 interface Lead {
@@ -1585,6 +1585,178 @@ function VipRequestsTab() {
   );
 }
 
+// ── Clarity (session replay + hőtérkép) ───────────────────────────────────────
+interface ClarityMetric { metricName: string; information: Record<string, string | number>[] }
+interface ClarityResponse {
+  configured?: boolean; cached?: boolean; stale?: boolean; fetchedAt?: number;
+  days?: number; metrics?: ClarityMetric[]; error?: string;
+}
+
+const RAW_CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID ?? '';
+const CLARITY_PROJECT_ID = /^[a-z0-9]{8,16}$/i.test(RAW_CLARITY_PROJECT_ID) ? RAW_CLARITY_PROJECT_ID : '';
+const clarityUrl = (path: string) =>
+  `https://clarity.microsoft.com/projects/view/${CLARITY_PROJECT_ID}/${path}`;
+
+const CLARITY_LABEL: Record<string, string> = {
+  totalSessionCount: 'Munkamenetek',
+  totalBotSessionCount: 'Ebből bot',
+  distinctUserCount: 'Egyedi látogatók',
+  distantUserCount: 'Egyedi látogatók',
+  pagesPerSessionPercentage: 'Oldal / munkamenet',
+  PagesPerSessionPercentage: 'Oldal / munkamenet',
+  sessionsCount: 'Munkamenetek',
+  pagesViews: 'Oldalmegtekintés',
+  sessionsWithMetricPercentage: 'Érintett munkamenetek (%)',
+  sessionsWithoutMetricPercentage: 'Nem érintett (%)',
+  subTotal: 'Darab',
+  averageScrollDepth: 'Átlagos görgetési mélység (%)',
+  activeTime: 'Aktív idő (ms)',
+  totalTime: 'Teljes idő (ms)',
+};
+const METRIC_LABEL: Record<string, string> = {
+  Traffic: 'Forgalom',
+  EngagementTime: 'Elköltött idő',
+  ScrollDepth: 'Görgetési mélység',
+  RageClickCount: 'Dühös kattintás (rage click)',
+  DeadClickCount: 'Halott kattintás (dead click)',
+  ExcessiveScroll: 'Túlzott görgetés',
+  QuickbackClick: 'Gyors visszalépés',
+  ScriptErrorCount: 'JS hibák',
+  ErrorClickCount: 'Hibás kattintás',
+};
+function prettyNum(v: string | number) {
+  const n = typeof v === 'number' ? v : Number(v);
+  if (!Number.isFinite(n)) return String(v);
+  return Number.isInteger(n) ? n.toLocaleString('hu-HU') : n.toFixed(2);
+}
+
+function ClarityTab() {
+  const [data, setData] = useState<ClarityResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [days, setDays] = useState(3);
+
+  const load = useCallback(async (force = false, d = days) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/clarity?days=${d}${force ? '&force=1' : ''}`, {
+        headers: { Authorization: `Bearer ${adminToken()}` },
+      });
+      setData(await res.json());
+    } catch {
+      setData({ configured: true, error: 'Hálózati hiba a lekérés közben.' });
+    } finally {
+      setLoading(false);
+    }
+  }, [days]);
+
+  // `load` a `days`-ből származik, ezért csak a napszámra iratkozunk fel.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(false, days); }, [days]);
+
+  const linkBtn: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 16px', borderRadius: 10,
+    background: 'rgba(0,255,239,0.08)', border: '1px solid rgba(0,255,239,0.25)', color: '#00FFEF',
+    fontSize: 13, fontWeight: 600, textDecoration: 'none',
+  };
+  const card: React.CSSProperties = {
+    background: 'rgba(13,31,60,0.6)', border: '1px solid rgba(255,255,255,0.06)',
+    borderRadius: 12, padding: 16,
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={card}>
+        <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: '0 0 6px' }}>Microsoft Clarity — élő felvétel &amp; hőtérkép</h3>
+        <p style={{ color: '#8899aa', fontSize: 13, margin: '0 0 14px', lineHeight: 1.6 }}>
+          A felvételek és hőtérképek a Clarity saját felületén nézhetők meg (a Microsoft nem engedi beágyazni iframe-be).
+          Az alábbi gombok közvetlenül a projekt megfelelő nézetét nyitják meg, bejelentkezés után.
+        </p>
+        {CLARITY_PROJECT_ID ? (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <a href={clarityUrl('dashboard')} target="_blank" rel="noopener noreferrer" style={linkBtn}>📊 Dashboard</a>
+            <a href={clarityUrl('recordings')} target="_blank" rel="noopener noreferrer" style={linkBtn}>🎬 Felvételek</a>
+            <a href={clarityUrl('heatmaps')} target="_blank" rel="noopener noreferrer" style={linkBtn}>🔥 Hőtérképek</a>
+          </div>
+        ) : (
+          <p style={{ color: '#facc15', fontSize: 13, margin: 0 }}>
+            NEXT_PUBLIC_CLARITY_ID nincs beállítva — a mérőkód sem fut.
+          </p>
+        )}
+      </div>
+
+      <div style={card}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+          <div>
+            <h3 style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: '0 0 4px' }}>Élő mutatók</h3>
+            <p style={{ color: '#64748b', fontSize: 11, margin: 0 }}>
+              Clarity Data Export API — csak az utolsó 1-3 nap, napi 10 lekérés a limit. 3 óránként frissül.
+              {data?.fetchedAt ? ` Utolsó frissítés: ${new Date(data.fetchedAt).toLocaleString('hu-HU')}` : ''}
+              {data?.stale ? ' (mentett adat)' : ''}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {[1, 2, 3].map(d => (
+              <button key={d} onClick={() => setDays(d)}
+                style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer',
+                  background: days === d ? 'rgba(0,255,239,0.12)' : 'transparent',
+                  color: days === d ? '#00FFEF' : '#8899aa',
+                  border: `1px solid ${days === d ? 'rgba(0,255,239,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+                {d} nap
+              </button>
+            ))}
+            <button onClick={() => load(true)} disabled={loading}
+              style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, cursor: loading ? 'default' : 'pointer',
+                background: 'rgba(255,255,255,0.04)', color: '#8899aa', border: '1px solid rgba(255,255,255,0.08)' }}>
+              ⟳ Frissítés
+            </button>
+          </div>
+        </div>
+
+        {loading && <p style={{ color: '#64748b', fontSize: 13 }}>Betöltés…</p>}
+
+        {!loading && data?.configured === false && (
+          <div style={{ color: '#facc15', fontSize: 13, lineHeight: 1.7 }}>
+            <strong>CLARITY_API_TOKEN hiányzik.</strong><br />
+            Clarity → Settings → Data Export → Generate new API token, majd add hozzá a Vercel env változókhoz
+            <code style={{ color: '#00FFEF' }}> CLARITY_API_TOKEN</code> néven. A felvételek és hőtérképek a fenti
+            gombokkal enélkül is elérhetők.
+          </div>
+        )}
+
+        {!loading && data?.error && data.configured !== false && (
+          <p style={{ color: '#f87171', fontSize: 13, marginTop: 0 }}>{data.error}</p>
+        )}
+
+        {!loading && data?.metrics?.length ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+            {data.metrics.map(m => {
+              const row = m.information?.[0];
+              if (!row) return null;
+              return (
+                <div key={m.metricName} style={{ background: 'rgba(6,13,24,0.6)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: 14 }}>
+                  <p style={{ color: '#00FFEF', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>
+                    {METRIC_LABEL[m.metricName] ?? m.metricName}
+                  </p>
+                  {Object.entries(row).map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13, padding: '3px 0' }}>
+                      <span style={{ color: '#8899aa' }}>{CLARITY_LABEL[k] ?? k}</span>
+                      <span style={{ color: '#fff', fontWeight: 600 }}>{prettyNum(v)}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {!loading && data && !data.error && !data.metrics?.length && data.configured !== false && (
+          <p style={{ color: '#64748b', fontSize: 13 }}>Nincs adat a kiválasztott időszakra.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main admin page ────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -1627,6 +1799,7 @@ export default function AdminPage() {
   const TABS: { id: Tab; label: string; badge?: number }[] = [
     { id: 'chatok',      label: '💬 Chatok' },
     { id: 'analitika',   label: '📊 Analitika' },
+    { id: 'clarity',     label: '🔥 Clarity' },
     { id: 'leadek',      label: '📋 Leadek', badge: counts.newLeads },
     { id: 'visszahivas', label: '📞 Visszahívás', badge: counts.newCallbacks },
     { id: 'anyaglistak', label: '🧾 Anyaglisták', badge: counts.newMaterialLists },
@@ -1667,6 +1840,7 @@ export default function AdminPage() {
 
         {tab === 'chatok'      && <ChatTab />}
         {tab === 'analitika'   && <AnalyticsTab />}
+        {tab === 'clarity'     && <ClarityTab />}
         {tab === 'leadek'      && <LeadsTab />}
         {tab === 'visszahivas' && <CallbacksTab />}
         {tab === 'anyaglistak' && <MaterialListsTab />}

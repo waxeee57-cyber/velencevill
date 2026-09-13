@@ -1,7 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { CONSENT_EVENT, hasAnalyticsConsent } from '@/utils/analytics';
+
+// Microsoft Clarity (session replay + hőtérkép). Csak akkor töltődik be, ha
+// a látogató elfogadta az analitikai sütiket (CookieBanner) ÉS be van állítva
+// a NEXT_PUBLIC_CLARITY_ID env változó. ID nélkül nulla hálózati kérés megy ki.
+// Csak alfanumerikus project id kerülhet a scriptbe (XSS, ha az env szennyezett).
+const RAW_CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID ?? '';
+const CLARITY_ID = /^[a-z0-9]{8,16}$/i.test(RAW_CLARITY_ID) ? RAW_CLARITY_ID : '';
 
 export default function ConsentAnalytics() {
   const [allowed, setAllowed] = useState(false);
@@ -14,5 +22,15 @@ export default function ConsentAnalytics() {
   }, []);
 
   if (!allowed) return null;
-  return <Analytics />;
+
+  return (
+    <>
+      <Analytics />
+      {CLARITY_ID ? (
+        <Script id="ms-clarity" strategy="afterInteractive">
+          {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
+        </Script>
+      ) : null}
+    </>
+  );
 }
