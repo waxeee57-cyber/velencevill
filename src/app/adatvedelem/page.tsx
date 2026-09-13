@@ -64,6 +64,7 @@ export default function AdatvedelemPage() {
             <li style={li}><strong>Vercel Inc.</strong> — weboldal tárhely / hosting</li>
             <li style={li}><strong>Vercel Blob</strong> — a beérkező megkeresések biztonságos, privát tárolása</li>
             <li style={li}><strong>Resend</strong> — e-mail értesítések kézbesítése</li>
+            <li style={li}><strong>Microsoft Clarity (Microsoft Ireland Operations Ltd.)</strong> — anonimizált látogatói viselkedéselemzés (hőtérkép, munkamenet-felvétel). Csak az Ön analitikai süti-hozzájárulása esetén fut.</li>
           </ul>
 
           <h2 style={sectionTitle}>6. Az Ön jogai</h2>
