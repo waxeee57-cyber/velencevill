@@ -16,6 +16,10 @@ export const dynamic = 'force-dynamic';
 
 const CLARITY_ENDPOINT = 'https://www.clarity.ms/export-data/api/v1/project-live-insights';
 const TTL_MS = 3 * 60 * 60 * 1000; // 3 óra
+const MIN_FORCE_MS = 10 * 60 * 1000; // force sem hívhat sűrűbben (10 kérés/nap)
+const ALLOWED_DIMENSIONS = new Set([
+  'Browser', 'Device', 'Country/Region', 'OS', 'Source', 'Medium', 'Campaign', 'Channel', 'URL',
+]);
 
 type ClarityMetric = { metricName: string; information: Record<string, string | number>[] };
 
@@ -35,12 +39,14 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const raw = Number(url.searchParams.get('days') ?? '3');
   const days = raw === 1 || raw === 2 || raw === 3 ? raw : 3;
-  const dimension = url.searchParams.get('dimension') ?? '';
+  const rawDim = url.searchParams.get('dimension') ?? '';
+  const dimension = ALLOWED_DIMENSIONS.has(rawDim) ? rawDim : '';
   const force = url.searchParams.get('force') === '1';
 
   const key = `${days}|${dimension}`;
   const hit = cache.get(key);
-  if (hit && !force && Date.now() - hit.at < TTL_MS) {
+  const maxAge = force ? MIN_FORCE_MS : TTL_MS;
+  if (hit && Date.now() - hit.at < maxAge) {
     return NextResponse.json({ configured: true, cached: true, fetchedAt: hit.at, days, dimension, metrics: hit.data });
   }
 
@@ -55,7 +61,6 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
       if (hit) {
         return NextResponse.json({
           configured: true, cached: true, stale: true, fetchedAt: hit.at, days, dimension,
@@ -65,13 +70,16 @@ export async function GET(request: Request) {
       }
       const msg = res.status === 429
         ? 'Clarity API napi limit (10 kérés/projekt/nap) elérve. Próbáld később.'
-        : `Clarity API hiba: ${res.status}${body ? ` — ${body.slice(0, 200)}` : ''}`;
+        : `Clarity API hiba: ${res.status}`;
       return NextResponse.json({ configured: true, error: msg });
     }
 
-    const data = (await res.json()) as ClarityMetric[];
+    const data = (await res.json()) as unknown;
+    if (!Array.isArray(data)) {
+      return NextResponse.json({ configured: true, error: 'Clarity API váratlan választ adott.' });
+    }
     const at = Date.now();
-    cache.set(key, { at, data });
+    cache.set(key, { at, data: data as ClarityMetric[] });
     return NextResponse.json({ configured: true, cached: false, fetchedAt: at, days, dimension, metrics: data });
   } catch (e) {
     if (hit) {

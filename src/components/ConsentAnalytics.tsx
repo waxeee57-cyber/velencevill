@@ -7,7 +7,9 @@ import { CONSENT_EVENT, hasAnalyticsConsent } from '@/utils/analytics';
 // Microsoft Clarity (session replay + hőtérkép). Csak akkor töltődik be, ha
 // a látogató elfogadta az analitikai sütiket (CookieBanner) ÉS be van állítva
 // a NEXT_PUBLIC_CLARITY_ID env változó. ID nélkül nulla hálózati kérés megy ki.
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+// Csak alfanumerikus project id kerülhet a scriptbe (XSS, ha az env szennyezett).
+const RAW_CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID ?? '';
+const CLARITY_ID = /^[a-z0-9]{8,16}$/i.test(RAW_CLARITY_ID) ? RAW_CLARITY_ID : '';
 
 export default function ConsentAnalytics() {
   const [allowed, setAllowed] = useState(false);

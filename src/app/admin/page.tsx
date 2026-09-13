@@ -1592,7 +1592,8 @@ interface ClarityResponse {
   days?: number; metrics?: ClarityMetric[]; error?: string;
 }
 
-const CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID ?? '';
+const RAW_CLARITY_PROJECT_ID = process.env.NEXT_PUBLIC_CLARITY_ID ?? '';
+const CLARITY_PROJECT_ID = /^[a-z0-9]{8,16}$/i.test(RAW_CLARITY_PROJECT_ID) ? RAW_CLARITY_PROJECT_ID : '';
 const clarityUrl = (path: string) =>
   `https://clarity.microsoft.com/projects/view/${CLARITY_PROJECT_ID}/${path}`;
 
