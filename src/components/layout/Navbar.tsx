@@ -1,78 +1,10 @@
 'use client';
-import { useState, useEffect, type CSSProperties } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAnyaglistaCount } from '@/hooks/useAnyaglista';
-import { useNotices, type Notice } from '@/hooks/useNotices';
-
-function NoticeItem({ notice }: { notice: Notice }) {
-  const style: CSSProperties = {
-    fontSize: 13,
-    fontWeight: 600,
-    color: '#060d18',
-    whiteSpace: 'nowrap',
-    textDecoration: notice.href ? 'underline' : 'none',
-    textUnderlineOffset: 3,
-  };
-  if (notice.href) {
-    const external = notice.href.startsWith('http');
-    return (
-      <a
-        href={notice.href}
-        style={style}
-        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-      >
-        {notice.body}
-      </a>
-    );
-  }
-  return <span style={style}>{notice.body}</span>;
-}
-
-function NewsBar({ notices }: { notices: Notice[] }) {
-  const items = notices.length === 1 ? notices : [...notices, ...notices];
-  const scroll = notices.length > 1;
-
-  return (
-    <div
-      className="news-bar"
-      role="status"
-      aria-live="polite"
-      aria-label="Aktuális hírek"
-      style={{
-        background: '#00FFEF',
-        color: '#060d18',
-        overflow: 'hidden',
-        borderBottom: '1px solid rgba(6,13,24,0.12)',
-      }}
-    >
-      <div
-        className={scroll ? 'news-bar-track' : undefined}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: scroll ? 'flex-start' : 'center',
-          gap: scroll ? 40 : 12,
-          width: scroll ? 'max-content' : '100%',
-          padding: '8px 16px',
-          minHeight: 44,
-        }}
-      >
-        {items.map((n, i) => (
-          <span key={`${n.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 40 }}>
-            <NoticeItem notice={n} />
-            {scroll && (
-              <span aria-hidden="true" style={{ opacity: 0.45, fontWeight: 700 }}>·</span>
-            )}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const notices = useNotices();
   const anyaglistaCount = useAnyaglistaCount();
 
   useEffect(() => {
@@ -83,7 +15,6 @@ export default function Navbar() {
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 50 }}>
-      {notices.length > 0 ? <NewsBar notices={notices} /> : null}
       <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 2rem', height: 64,

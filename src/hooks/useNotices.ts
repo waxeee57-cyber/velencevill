@@ -15,7 +15,7 @@ export function useNotices(pollMs = 60000): Notice[] {
     let stop = false;
     async function load() {
       try {
-        const res = await fetch('/api/notices', { cache: 'no-store' });
+        const res = await fetch('/api/notices');
         if (!res.ok) return;
         const data = await res.json();
         if (!stop) setNotices(Array.isArray(data.notices) ? data.notices : []);
