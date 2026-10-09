@@ -64,6 +64,58 @@ Enélkül minden admin/leadgen funkció `503`-at ad ("A tároló nincs beállít
 - Megjegyzés: ez **ügyfélprojekt**, nem DomRol-termék — a globális DomRol design system itt NEM érvényes
 
 ## HOL TART
+- 2026-09-13 (SEO-audit + javítások). Teljes mért audit az ÉLES oldalon (21 URL curl-lel),
+  majd a kódoldali tételek javítva. Jelentés: `/seo-audit` artifact.
+  - **Canonical-hoszt (P0).** Mérve: az éles hoszt `www.velencevillkft.hu`, de MINDEN canonical,
+    mind a 17 sitemap-URL, az OG-URL-ek és a JSON-LD `@id`-k az apex `velencevillkft.hu`-ra
+    mutattak, ami 308-cal visszairányít www-re. A `src/lib/site.ts` fallbackja www-re állítva.
+    ⚠️ **A fallback csak akkor él, ha az env változó hiányzik** — a `NEXT_PUBLIC_SITE_URL`
+    Vercel-beli értékét kézzel kell ellenőrizni (lásd TEENDŐ ÉLESBEN).
+  - **Városoldalak 8 → 3.** Mérve: a 8 lap páronként 93,2–97,2% szóátfedés (átlag 94,7%,
+    28 pár), 193–205 szó/lap → doorway-kockázat. Maradt: `velence`, `gardony` (Agárddal),
+    `fejer-megye`. Az 5 megszüntetett 301-gyel átirányítva (`next.config.mjs`), a kulcsszavaik
+    a megmaradó lapok `telepulesek` tömbjében + `areaServed` schemában élnek tovább.
+    Eredmény mérve: **94,7% → 52,4% átfedés, 193–205 → 365–379 szó/lap.**
+  - **`/helyi` meta-refresh → valódi hub.** A `redirect()` statikusan prerenderelt oldalban
+    nem ad 3xx-et: a Next 14 `<meta http-equiv="refresh">`-t sütött a HTML-be → 200-as
+    soft-404 a főoldal title-jével, canonical nélkül. Most valódi hub-oldal, `/helyi` a
+    sitemapben is.
+  - **Orphan-státusz megszüntetve.** Mérve: a `/helyi/*` lapokra NULLA belső link mutatott
+    az egész oldalról. Most footer „Kiszolgált települések" blokk + hub + kereszthivatkozás
+    a lapok között → **0 → 4 egyedi belső link minden oldalon.**
+  - **`*.vercel.app` noindex.** Mérve: a `project-5h5vh.vercel.app` alias 200-zal szolgálta
+    ki a teljes éles oldalt, `Allow: /` robots.txt-vel és X-Robots-Tag NÉLKÜL. Host-alapú
+    `X-Robots-Tag: noindex, nofollow` header a `next.config.mjs`-ben (tesztelve Host fejléccel).
+    A végleges megoldás a domain leválasztása — dashboard-művelet.
+  - **Title/description.** Mind 60 / 160 karakter alá vive (mérve a renderelt HTML-ből).
+    A cikk-title-ök `absolute`-ra, mert a root `template` ráült a string-title-re
+    („… | Velence Vill Tudástár | Velence Vill Kft." = 95 karakter). A `/markak` és
+    `/termekek` korábban kulcsszó nélküli 28/29 karakteres title-t kapott.
+  - **Heading-ugrások.** `/helyi/*` h1→h3, `/termekek` h1→h3, `/tudastar` h1→h4, footer h2→h4
+    — mind javítva, mérve: 0 ugrás, pontosan 1 H1 minden oldalon.
+  - **`public/favicon.ico`** legenerálva (`icon-512.png`-ből, 32×32 PNG-payload ICO) — korábban 404.
+  - **9 soft hyphen (U+00AD) eltávolítva** a Tudástár-cikkekből. Láthatatlan karakterek voltak
+    összetett szavak közepén („gyenge­áramú"), amelyek megtörik a szóegyezést.
+  - Build + lint + `tsc --noEmit` zöld (52/52 statikus oldal). 5 lint warning pre-existing
+    (`<img>` az adminban és a HeroNewsban), nem ebből a körből.
+  - **2. kör — strukturált adat, robots, ikonok.** `src/lib/schema.ts` (új, közös JSON-LD
+    építők: `breadcrumb`, `itemList`, `service`, `webApp`). Korábban csak a `/` és a `/helyi`
+    hordozott oldalspecifikus schemát; most **mind a 8 fő oldal**: BreadcrumbList mindenhol +
+    ItemList (`/termekek` 36 tétel, `/markak` 13 gyártó, `/helyi` 3 terület), Service +
+    OfferCatalog (`/szerelo`), WebApplication (`/kalkulator`). Mérve: 3 alap + 2 oldalspecifikus
+    blokk oldalanként. **Product/Offer schema szándékosan NINCS** — a katalógusban nincs ár és
+    nincs élő készlet, hiányos Offer félrevezető lenne.
+  - **robots.txt bővítve**: `/admin`, `/vip`, `/anyaglista` explicit tiltás (crawl-budget) +
+    12 AI-crawler explicit engedése (GPTBot, ClaudeBot, PerplexityBot, Google-Extended stb. —
+    GEO-nyereség egy helyi boltnál) + `Host`. ⚠️ A `noindex` metákat NEM vettük ki: amit a
+    robots tilt, azon a Google a metát sem olvassa el, ezért a kettő egymás biztosítéka.
+  - **sitemap `lastModified`: `new Date()` → fix `UTOLSO_MODOSITAS`.** Korábban minden oldal
+    örökké „épp most módosult"-nak látszott — értéktelen és zajos jelzés. Kézzel frissítendő.
+  - **Ikonlánc teljes**: `favicon.ico` (korábban 404), `apple-touch-icon.png` 180×180 (korábban
+    a 192-es PNG állt a helyén), `manifest.json` bővítve (lang, scope, categories, maskable
+    ikon, shortcuts). Plusz `preconnect` a fonts.gstatic.com-ra, `dns-prefetch` a maps.google-re.
+  - **NEM változott a `draft: true`** a 12 cikken — a user döntése szerint a szakmai
+    lektorálás után ő kapcsolja át. A cikkátnézés eredménye a session végi jelentésben.
 - 2026-08-18 (2. kör, Supabase teljes kivezetése): az élő admin panel `TypeError: fetch failed`
   hibával állt (minden fülön) — mérve: a deployolt JS bundle-ből kiolvasott
   `NEXT_PUBLIC_SUPABASE_URL` (`uqlzipyiuowpeuwxobuj.supabase.co`) DNS-ben nem oldódott fel
@@ -120,6 +172,19 @@ Enélkül minden admin/leadgen funkció `503`-at ad ("A tároló nincs beállít
 - Ismert hiányosságok (forrás: README):
   - SEO checklist bemutató előtt — mind nyitott: `og-image.jpg`, `favicon.ico`, Search Console verification token, Google Business Profile websiteURL, valós Facebook/Instagram URL-ek a `Social.tsx`-ben és `layout.tsx`-ben
   - A README "Google 1. hely" teendőlistája (Business Profile, Search Console + sitemap, helyi kulcsszavak, backlink, Ads) érintetlen
+
+## TEENDŐ ÉLESBEN (2026-09-13, SEO — kódból nem elvégezhető)
+Mind a három Vercel-dashboard művelet, nincs rájuk API/MCP eszköz:
+1. 🔴 **`NEXT_PUBLIC_SITE_URL` ellenőrzése/beállítása** — Vercel → `velencevill` → Settings →
+   Environment Variables → `https://www.velencevillkft.hu` (Production + Preview), majd redeploy.
+   A kódbeli fallback már www, de **az env változó felülírja**. Bizonyíték, hogy használatban van:
+   a lokális `.env.local` `project-5h5vh.vercel.app`-ra állítja, és a renderelt canonical azt mutatta.
+   Utóellenőrzés: `curl -s https://www.velencevillkft.hu/sitemap.xml | grep -c 'https://www\.'` → 13.
+2. 🟠 **`project-5h5vh.vercel.app` domain leválasztása** — Settings → Domains. A kódban lévő
+   host-alapú `X-Robots-Tag` csak tartalék védelem.
+3. 🟠 **Search Console property a WWW hosztra** + sitemap beküldés. Enélkül nincs indexelési és
+   CWV-mezőadat — az audit „Amit nem mértem" szakasza emiatt üres. A `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`
+   env-hez a kód oldala kész (`layout.tsx`).
 
 ## FIGYELEM
 - 🔴 **ERŐSEN ELAVULT STACK — 2 major lemaradás.** Ez a legrégebbi projekt a mezőnyben:

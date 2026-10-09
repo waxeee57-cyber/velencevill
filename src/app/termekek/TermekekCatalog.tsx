@@ -41,6 +41,19 @@ export default function TermekekCatalog() {
         ))}
       </div>
 
+      {/* Az aktív kategória h2-ként. Két okból kell:
+          1. Heading-hierarchia: a ProductCard címei h3-ak, közéjük és a lap h1-je
+             közé kellett egy h2 — korábban h1 → h3 ugrás volt (mérve élesben).
+          2. A látogató a szűrés után lássa, mit néz éppen, és hány tétel van. */}
+      <h2 style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginBottom: 16 }}>
+        {aktivKategoria === 'osszes'
+          ? 'Összes termék'
+          : KATEGORIAK.find(k => k.slug === aktivKategoria)?.nev ?? 'Termékek'}{' '}
+        <span style={{ fontSize: 14, fontWeight: 500, color: '#8899aa' }}>
+          ({szurt.length} tétel)
+        </span>
+      </h2>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 18 }}>
         {szurt.map(termek => (
           <ProductCard key={termek.id} termek={termek} kategoriaIkon={KATEGORIAK.find(k => k.slug === termek.kategoria)?.ikon ?? '⚡'} />

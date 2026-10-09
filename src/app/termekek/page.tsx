@@ -3,17 +3,28 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AvailabilityBadge from '@/components/AvailabilityBadge';
 import TermekekCatalog from './TermekekCatalog';
+import { breadcrumb, itemList } from '@/lib/schema';
+import { TERMEKEK } from '@/lib/termekek';
 
 export const metadata: Metadata = {
-  title: 'Termékek',
-  description: 'Villanyszerelési termékek kereshető katalógusa: kábelek, kapcsolók, elosztók, világítástechnika, szerelési anyagok és szerszámok. Elérhetőségi jelzéssel, azonnali anyaglista-küldéssel.',
+  // Korábban csak 'Termékek' volt → 29 karakteres title nulla kulcsszóval,
+  // 36 termékhez. Most 'Villanyszerelési anyagok és termékek | Velence Vill Kft.'
+  // = 56 karakter, a fő kulcsszóval elöl.
+  title: 'Villanyszerelési anyagok és termékek',
+  // 160 alatt: korábban 203 volt.
+  description: 'Kereshető katalógus: kábel, kapcsoló, dugalj, kismegszakító, elosztószekrény, világítás és szerszám. Elérhetőségi jelzéssel, egykattintásos anyaglistával.',
   keywords: ['villanyszerelési termékek', 'kábelek', 'kapcsolók', 'elosztók', 'világítástechnika', 'villanyszerelési anyagok Velence'],
   alternates: { canonical: '/termekek' },
 };
 
+const crumbs = breadcrumb([{ name: 'Termékek', path: '/termekek' }]);
+const katalogus = itemList('Villanyszerelési termékkatalógus', TERMEKEK.map(t => t.nev), '/termekek');
+
 export default function TermekekPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(katalogus) }} />
       <Navbar />
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '4rem 2rem' }}>

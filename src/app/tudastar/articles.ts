@@ -35,7 +35,7 @@ export const ARTICLES: Article[] = [
 A villanyszerelés a tervezőasztalon kezdődik, nem a falban. Még a falazás előtt érdemes végiggondolni, hol lesznek a bútorok, hová kerül a TV, a konyhai gépek, a mosógép, és hol szeretne később bővíteni. A modern háztartás lényegesen több áramkört és csatlakozási pontot igényel, mint egy 20 évvel ezelőtti. Gondoljon előre: üres védőcső a tetőtérbe vagy a garázsba később aranyat érhet.
 
 ## 2. Kiállások és falvésés
-A nyomvonalak kijelölése és a dobozok elhelyezése után jön a vésés és a védőcsövezés. Itt dől el a kapcsolók, dugaljak és lámpahelyek pontos pozíciója — érdemes a helyszínen, szalaggal kijelölve egyeztetni, mert a kész falban már drága a módosítás. A gyenge­áramú hálózatot (internet, riasztó, kaputelefon) ilyenkor célszerű külön nyomvonalon kiépíteni.
+A nyomvonalak kijelölése és a dobozok elhelyezése után jön a vésés és a védőcsövezés. Itt dől el a kapcsolók, dugaljak és lámpahelyek pontos pozíciója — érdemes a helyszínen, szalaggal kijelölve egyeztetni, mert a kész falban már drága a módosítás. A gyengeáramú hálózatot (internet, riasztó, kaputelefon) ilyenkor célszerű külön nyomvonalon kiépíteni.
 
 ## 3. Elosztótábla és áramkörök
 A központ az elosztószekrény. Itt kapnak helyet a kismegszakítók, az áram-védőkapcsolók (FI relé) és a túlfeszültség-védelem. A korszerű kialakítás külön áramkörökre bontja a nagy fogyasztókat és a helyiségeket, és tartalékhelyet hagy a későbbi bővítéshez. A pontos felosztás a fogyasztói igények és a vonatkozó szabvány (MSZ HD 60364 sorozat) alapján a tervező és a kivitelező feladata.
@@ -79,7 +79,7 @@ A kombinált eszköz áramkörönként véd, így a hiba lokalizálódik: csak a
 A választás függ a fogyasztói igénytől, az áramkörök számától, a rendelkezésre álló helytől az elosztóban és a kívánt üzembiztonságtól. Számít a hibaáram-érzékenység (a lakossági személyvédelemnél jellemzően a finomabb fokozat) és a típus (a váltakozó és lüktető egyenáramú összetevőkre is reagáló kategóriák) — ezek pontos megválasztása a szabvány (MSZ HD 60364-4-41) és a terhelés ismeretében szakember feladata.
 
 ## Mikor hívjon szakembert
-Az áram-védőkapcsoló kiválasztása és bekötése, valamint a meglévő rendszer felülvizsgálata szakértelmet igényel. A teszt­gomb havi kipróbálása viszont a felhasználó feladata — ha nem old le, azonnal hívjon szakembert.
+Az áram-védőkapcsoló kiválasztása és bekötése, valamint a meglévő rendszer felülvizsgálata szakértelmet igényel. A tesztgomb havi kipróbálása viszont a felhasználó feladata — ha nem old le, azonnal hívjon szakembert.
 
 ${CTA}
 
@@ -195,7 +195,7 @@ A tipikus modulok kapcsolást, fényerő-szabályozást, redőnyvezérlést, fog
 Gyakori felhasználás: kültéri és hangulatvilágítás ütemezése, redőny automatizálás, „mindent le" jelenetek távozáskor, illetve egyes körök fogyasztásának mérése. Kezdetnek érdemes egy-két jól körülhatárolt feladattal indulni, nem az egész házat egyszerre okosítani.
 
 ## A kritikus pont: a bekötés
-És itt jön a leglényegesebb üzenet. A Shelly modul a 230 V-os hálózatra, a fali dobozba kerül, gyakran nulla­vezető bekötését is igényli. Ez élő hálózaton végzett villamos munka — nem barkácsfeladat. A modul kiválasztása, a meglévő bekötés ellenőrzése (van-e nulla a dobozban), a helyes csatlakoztatás és a biztonságos lezárás szakember dolga.
+És itt jön a leglényegesebb üzenet. A Shelly modul a 230 V-os hálózatra, a fali dobozba kerül, gyakran nullavezető bekötését is igényli. Ez élő hálózaton végzett villamos munka — nem barkácsfeladat. A modul kiválasztása, a meglévő bekötés ellenőrzése (van-e nulla a dobozban), a helyes csatlakoztatás és a biztonságos lezárás szakember dolga.
 
 ## Hálózati és biztonsági szempontok
 Az okoseszközök nem helyettesítik a megfelelő áramköri védelmet: a kismegszakítók és az áram-védőkapcsoló továbbra is a hagyományos elven védenek. Érdemes a Wi-Fi hálózat megbízhatóságára és a gyártói frissítésekre is figyelni.
@@ -282,7 +282,7 @@ ${LEGAL}`,
 Az IP után két szám áll. Az első (0–6) a szilárd testek és por elleni védelmet jelöli, a második (0–8) a víz elleni védelmet. Minél nagyobb a szám, annál jobb a védelem. Egy beltéri lámpa lehet alacsony fokozatú, egy kültéri viszont magasabbat kíván.
 
 ## Hová mit — tájékoztató logika
-A választás a víznek és pornak való kitettségtől függ. Fedett, eső ellen védett helyre (fedett terasz, tornác) alacsonyabb fokozat is elég lehet. Szabadon álló, esőnek kitett helyre (kerti lámpa, homlokzat, bejárat) már fröccsenő-, illetve csapó­eső-álló fokozat kell. Vízközeli vagy medence környéki, illetve talajba/vízbe kerülő lámpáknál kiemelten magas védettség és külön biztonsági szempontok szükségesek.
+A választás a víznek és pornak való kitettségtől függ. Fedett, eső ellen védett helyre (fedett terasz, tornác) alacsonyabb fokozat is elég lehet. Szabadon álló, esőnek kitett helyre (kerti lámpa, homlokzat, bejárat) már fröccsenő-, illetve csapóeső-álló fokozat kell. Vízközeli vagy medence környéki, illetve talajba/vízbe kerülő lámpáknál kiemelten magas védettség és külön biztonsági szempontok szükségesek.
 
 ## A medence külön eset
 A medence és környéke fokozottan veszélyes terület: itt nem elég a magas IP — a víz közelében a villamos kialakításra külön, szigorú szabványi előírások vonatkoznak (MSZ HD 60364-7-702). Ezt mindig szakemberrel tervezze.
@@ -349,7 +349,7 @@ A megszokott egy- és kétpólusú kapcsolók, váltó- és keresztkapcsolók me
 Induljon a funkcióból: hol kell sima kapcsolás, hol váltókapcsoló (két helyről kapcsolt lámpa), hol dimmer, és hová jönne jól egy USB-aljzat (hálószoba, konyha, gyerekszoba). Ezután válassza ki az egységes keret- és színcsaládot, hogy a végeredmény harmonikus legyen.
 
 ## Esztétika és variálhatóság
-A különböző keret­színek és felületek lehetővé teszik, hogy a szerelvény illeszkedjen a falszínhez és a belső­építészeti stílushoz. Egy átgondoltan választott sorozat látványban is sokat dob a lakáson.
+A különböző keretszínek és felületek lehetővé teszik, hogy a szerelvény illeszkedjen a falszínhez és a belsőépítészeti stílushoz. Egy átgondoltan választott sorozat látványban is sokat dob a lakáson.
 
 ## Mikor hívjon szakembert
 A kapcsolók, dimmerek és funkciós aljzatok cseréje és bekötése villamos munka, amelyet szakember végez. A kiválasztásban viszont szívesen segítünk: üzletünkben megnézheti a Valena darabokat, és összeállítjuk a teljes listát a lakásához.
@@ -366,13 +366,13 @@ ${LEGAL}`,
     readTime: 7,
     publishDate: '2026-04-12',
     draft: true,
-    content: `A kismegszakító az elosztó „őre": túláram és rövidzárlat esetén lekapcsol, megvédve a vezetéket és a berendezést. A Schneider Acti9 a professzionális elosztók egyik referencia­sorozata — megbízható, jól bővíthető, és a kiegészítőivel teljes rendszerré áll össze.
+    content: `A kismegszakító az elosztó „őre": túláram és rövidzárlat esetén lekapcsol, megvédve a vezetéket és a berendezést. A Schneider Acti9 a professzionális elosztók egyik referenciasorozata — megbízható, jól bővíthető, és a kiegészítőivel teljes rendszerré áll össze.
 
 ## Mit jelent a B, C, D karakterisztika?
 A betű a kismegszakító pillanatszerű (gyors) leoldási viselkedését jelöli, vagyis azt, mekkora hirtelen áramnál kapcsol le azonnal. Röviden: a B a legérzékenyebb, a C a leggyakoribb általános célú, a D pedig a nagy bekapcsolási áramlökést adó terhelésekhez készült. A pontos választás a terhelés jellegétől és a hálózat paramétereitől függ.
 
 ## Mikor melyik — elvi áttekintés
-A B karakterisztika jellemzően kis induló­áramú, ellenállásos terhelésekhez (például világítás, dugaljkörök) illik. A C az általános, vegyes terheléshez a leggyakoribb választás. A D az erős induló­áramú, induktív vagy nagy lökést adó fogyasztókhoz (egyes motorok, transzformátoros terhelések) való. A helyes hozzárendelés méretezési kérdés.
+A B karakterisztika jellemzően kis indulóáramú, ellenállásos terhelésekhez (például világítás, dugaljkörök) illik. A C az általános, vegyes terheléshez a leggyakoribb választás. A D az erős indulóáramú, induktív vagy nagy lökést adó fogyasztókhoz (egyes motorok, transzformátoros terhelések) való. A helyes hozzárendelés méretezési kérdés.
 
 ## Az Acti9 előnyei
 A sorozat a kismegszakítók mellett áram-védőkapcsolókat, kombinált eszközöket (RCBO), túlfeszültség-védelmet és segédkiegészítőket is kínál, egységes rendszerben. Ez megkönnyíti a tervezést, a szerelést és a későbbi bővítést, az elosztó pedig átlátható és igényes marad.

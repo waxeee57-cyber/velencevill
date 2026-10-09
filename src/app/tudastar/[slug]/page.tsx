@@ -16,9 +16,18 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: Props): Metadata {
   const article = ARTICLES.find(a => a.slug === params.slug);
-  if (!article) return { title: 'Cikk nem található | Velence Vill Tudástár' };
+  if (!article) return { title: { absolute: 'Cikk nem található | Velence Vill Kft.' } };
   return {
-    title: `${article.title} | Velence Vill Tudástár`,
+    // `absolute` + utótag NÉLKÜL, két ok miatt:
+    //  1. A root layout `title.template`-je ('%s | Velence Vill Kft.') egy sima
+    //     string-title-re RÁÜL. Mérve élesben: a kábelméretezés-cikk title-je
+    //     "… | Velence Vill Tudástár | Velence Vill Kft." lett — 95 karakter,
+    //     dupla utótaggal, a SERP-ben csonkolva.
+    //  2. A cikkcímek önmagukban 43–63 karakteresek (mérve mind a 12-n), tehát
+    //     BÁRMILYEN utótag átviszi őket a ~60 karakteres SERP-vágás fölé.
+    //     A márkanevet a JSON-LD `publisher` és a domain viszi; a Google amúgy is
+    //     gyakran maga fűzi hozzá az oldal nevét.
+    title: { absolute: article.title },
     description: article.description,
     robots: article.draft ? { index: false, follow: false } : { index: true, follow: true },
     alternates: { canonical: `/tudastar/${article.slug}` },

@@ -15,16 +15,18 @@ export default function Footer() {
             <p style={{ fontSize: 13, lineHeight: 1.7 }}>Villanyszerelési szaküzlet Velencén — profiknak és magánvásárlóknak.</p>
           </div>
           <div>
-            <h4 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Elérhetőség</h4>
+            <h2 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Elérhetőség</h2>
             <p style={{ fontSize: 13, lineHeight: 1.9 }}>Fecske utca 12.<br />2481 Velence<br />H–P: 8:00–16:00<br />Szo: 8:00–12:00<br />V: Zárva</p>
           </div>
           <div>
-            <h4 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Oldalak</h4>
+            <h2 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Oldalak</h2>
             {[
               { label: 'Főoldal', href: '/' },
               { label: 'Termékkörök', href: '/termekek' },
               { label: 'Márkák', href: '/markak' },
               { label: 'Villanyszerelő', href: '/szerelo' },
+              { label: 'Tudástár', href: '/tudastar' },
+              { label: 'Kalkulátorok', href: '/kalkulator' },
               { label: 'Ajánlatot kérek', href: '/#ajanlat' },
             ].map(l => (
               <a key={l.label} href={l.href} style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#8899aa', textDecoration: 'none' }}
@@ -32,8 +34,25 @@ export default function Footer() {
                 onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>{l.label}</a>
             ))}
           </div>
+          {/* 2026-09-13 — Kiszolgált települések blokk.
+              Ezt megelőzően a /helyi/* oldalakra NULLA belső link mutatott az egész
+              oldalról (mérve mind a 13 publikus oldalon), vagyis teljes orphanok voltak:
+              az egyetlen felfedezési útvonaluk a sitemap volt. */}
           <div>
-            <h4 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Jogi</h4>
+            <h2 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Kiszolgált települések</h2>
+            {[
+              { label: 'Velence', href: '/helyi/velence' },
+              { label: 'Gárdony és Agárd', href: '/helyi/gardony' },
+              { label: 'Fejér megye', href: '/helyi/fejer-megye' },
+              { label: 'Összes terület', href: '/helyi' },
+            ].map(l => (
+              <a key={l.label} href={l.href} style={{ display: 'block', fontSize: 13, lineHeight: 2, color: '#8899aa', textDecoration: 'none' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F1F5F9')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#8899aa')}>{l.label}</a>
+            ))}
+          </div>
+          <div>
+            <h2 style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94A3B8', marginBottom: 10 }}>Jogi</h2>
             {[
               { label: 'Adatvédelmi tájékoztató', href: '/adatvedelem' },
               { label: 'ÁSZF', href: '/aszf' },

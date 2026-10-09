@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { breadcrumb, service } from '@/lib/schema';
 
 export const metadata: Metadata = {
   title: 'Villanyszerelő Partner',
@@ -18,9 +19,14 @@ const SERVICES = [
   { icon: '💡', title: 'Lámpaszerelés', desc: 'Csillár, LED szalag, kültéri lámpák és mozgásérzékelők telepítése, bekötése.' },
 ];
 
+const crumbs = breadcrumb([{ name: 'Villanyszerelő Partner', path: '/szerelo' }]);
+const szolgaltatas = service('Mike József', SERVICES.map(s => s.title));
+
 export default function SzereloPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(szolgaltatas) }} />
       <Navbar />
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem' }}>

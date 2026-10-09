@@ -2,17 +2,24 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import TudasTarGrid from './TudasTarGrid';
+import { breadcrumb } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Tudástár — Szakmai segédanyagok villanyszerelőknek és barkácsolóknak',
-  description: 'Ingyenes szakmai cikkek és útmutatók villanyszerelőknek és otthoni barkácsolóknak: kábelméretezés, FI relé, EV töltő telepítés, okos otthon és még sok más.',
+  // 60 karakter alatt a '| Velence Vill Kft.' utótaggal EGYÜTT (a root template
+  // hozzáfűzi). Korábban 97 karakter volt, a leíró rész elveszett a SERP-ben.
+  title: 'Tudástár villanyszerelőknek',
+  // 160 alatt: korábban 173 volt.
+  description: 'Szakmai útmutatók villanyszerelőknek és barkácsolóknak: kábelméretezés, FI relé, EV töltő, érintésvédelem, okos otthon. Ingyenes, gyakorlati anyagok.',
   keywords: ['villanyszerelési útmutató', 'kábelméretezés', 'FI relé', 'EV töltő telepítés', 'villanyszerelési tippek', 'okos otthon', 'LED világítás'],
   alternates: { canonical: '/tudastar' },
 };
 
+const crumbs = breadcrumb([{ name: 'Tudástár', path: '/tudastar' }]);
+
 export default function TudasTarPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }} />
       <Navbar />
       <main style={{ background: '#060d18', minHeight: '100vh' }}>
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem' }}>
